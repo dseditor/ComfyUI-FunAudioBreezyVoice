@@ -46,7 +46,7 @@ pip install -r requirements.txt
 ### Windows
 In windows need use conda to install pynini
 ```bash
-conda install -c conda-forge pynini=2.1.6
+conda install -c conda-forge pynini=2.1.5
 pip install -r requirements.txt
 
 ```
