@@ -1,4 +1,6 @@
 工作中进行中……
+# 已支持CosyVoice2
+新增了3个CosyVoice2节点。
 ## 安装注意事项：
  - Windows系统需要使用conda
  - 使用python3.10，torch<=2.4.1
