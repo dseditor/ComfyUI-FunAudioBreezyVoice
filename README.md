@@ -1,12 +1,15 @@
-<!--
- * @Author: SpenserCai
- * @Date: 2024-10-04 11:28:28
- * @version: 
- * @LastEditors: SpenserCai
- * @LastEditTime: 2024-10-06 11:56:47
- * @Description: file content
--->
-# ComfyUI-FunAudioLLM
+工作中进行中……
+## 安装注意事项：
+ - Windows系统需要使用conda
+ - 使用python3.10，torch<=2.4.1
+ - 原项目推荐的pynini2.1.6会有问题，需使用官方推荐的2.1.5：
+ ```bash
+ conda install -c conda-forge pynini=2.1.5 
+ pip install -r requirements.txt
+ ```
+ ---
+# 以下是原项目说明：
+## ComfyUI-FunAudioLLM
 Comfyui custom node for [FunAudioLLM](https://funaudiollm.github.io/) include [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) and [SenseVoice](https://github.com/FunAudioLLM/SenseVoice)
 
 ## Features
@@ -46,7 +49,7 @@ pip install -r requirements.txt
 ### Windows
 In windows need use conda to install pynini
 ```bash
-conda install -c conda-forge pynini=2.1.5
+conda install -c conda-forge pynini=2.1.6
 pip install -r requirements.txt
 
 ```
