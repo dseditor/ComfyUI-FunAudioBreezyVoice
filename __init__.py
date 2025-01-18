@@ -10,9 +10,21 @@ from .nodes.cosyvoice_nodes import *
 from .nodes.sensevoice_nodes import *
 
 NODE_CONFIG = {
+    "CosyVoice2ZeroShotNode": {
+        "class": CosyVoice2ZeroShotNode,
+        "name": "CosyVoice2 音色克隆"
+    },
+    "CosyVoice2CrossLingualNode": {
+        "class": CosyVoice2CrossLingualNode,
+        "name": "CosyVoice2 跨语言克隆"
+    },
+    "CosyVoice2InstructNode": {
+        "class": CosyVoice2InstructNode,
+        "name": "CosyVoice2 自然语言控制"
+    },
     "CosyVoiceZeroShotNode": {
         "class": CosyVoiceZeroShotNode,
-        "name": "CosyVoice 3s极速克隆"
+        "name": "CosyVoice 音色克隆"
     },
     "CosyVoiceSFTNode": {
         "class": CosyVoiceSFTNode,

@@ -94,6 +94,7 @@ def main():
         cfg["batch_size"] = args.batch_size
         cfg["train_filelist_path"] = str(os.path.join(root_path, cfg["train_filelist_path"]))
         cfg["valid_filelist_path"] = str(os.path.join(root_path, cfg["valid_filelist_path"]))
+        cfg["load_durations"] = False
 
     text_mel_datamodule = TextMelDataModule(**cfg)
     text_mel_datamodule.setup()
@@ -101,10 +102,8 @@ def main():
     log.info("Dataloader loaded! Now computing stats...")
     params = compute_data_statistics(data_loader, cfg["n_feats"])
     print(params)
-    json.dump(
-        params,
-        open(output_file, "w"),
-    )
+    with open(output_file, "w", encoding="utf-8") as dumpfile:
+        json.dump(params, dumpfile)
 
 
 if __name__ == "__main__":

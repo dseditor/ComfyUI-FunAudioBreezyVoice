@@ -16,7 +16,7 @@ from funasr.utils import postprocess_utils
 
 fAudioTool = FunAudioLLMTool()
 
-CATEGORY_NAME = "FunAudioLLM - SenseVoice"
+CATEGORY_NAME = "FunAudioLLM_V2/SenseVoice"
 
 folder_paths.add_model_folder_path("SenseVoice", os.path.join(folder_paths.models_dir, "SenseVoice"))
 

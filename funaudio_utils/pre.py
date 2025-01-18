@@ -13,7 +13,7 @@ import torchaudio
 class FunAudioLLMTool:
     def __init__(self):
         self.max_val = 0.8
-        self.prompt_sr, self.target_sr = 16000, 22050
+        self.prompt_sr, self.target_sr = 16000, 24000
 
     def postprocess(self,speech, top_db=60, hop_length=220, win_length=440):
         speech, _ = librosa.effects.trim(
