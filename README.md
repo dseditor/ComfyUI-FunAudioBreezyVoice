@@ -1,6 +1,7 @@
 # 已支持CosyVoice2
 ## 新增内容：
  - 新增了3个CosyVoice2节点。
+ - 整理了节点组。
  - 从官方更新了CosyVoice、SenseVoice、match，更新时间`2025-1-18`
  - 补充了更新CosyVoice后新增的参数`text_frontend`，作用应该是规范化文本，默认为`True`。
  - 优化了Speaker模型的保存与加载。
