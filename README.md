@@ -1,8 +1,18 @@
-工作中进行中……
 # 已支持CosyVoice2
-新增了3个CosyVoice2节点。
+## 新增内容：
+ - 新增了3个CosyVoice2节点。
+ - 从官方更新了CosyVoice、SenseVoice、match，更新时间`2025-1-18`
+ - 补充了更新CosyVoice后新增的参数`text_frontend`，作用应该是规范化文本，默认为`True`。
+ - 优化了Speaker模型的保存与加载。
+ - 因为CosyVoice2需要，采样率22050几乎全部改为了24000。
+ - 加入了inspiremusic，有时间的话考虑支持。
+## 使用说明：
+ - 工作流详见示例workflow
+ - 建议自动下载模型，不熟悉的话容易重复下载。想自己下载的请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)。
+ - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
+ - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
- - Windows系统需要使用conda
+ - Windows系统需要使用conda，请自行学习conda使用。
  - 使用python3.10，torch<=2.4.1
  - 原项目推荐的pynini2.1.6会有问题，需使用官方推荐的2.1.5：
  ```bash

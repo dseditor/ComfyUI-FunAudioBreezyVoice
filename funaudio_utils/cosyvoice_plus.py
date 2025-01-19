@@ -28,8 +28,8 @@ class CosyVoice1(CosyVoice):
 
 class CosyVoice2(CosyVoice2):
     
-    def inference_zero_shot_with_spkmodel(self,tts_text, spkmodel,stream=False, speed=1.0):
-        for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=True)):
+    def inference_zero_shot_with_spkmodel(self,tts_text, spkmodel,stream=False, speed=1.0, text_frontend=True):
+        for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend)):
             tts_text_token, tts_text_token_len = self.frontend._extract_text_token(tts_text)
             spkmodel["text"] = tts_text_token
             spkmodel["text_len"] = tts_text_token_len

@@ -10,7 +10,7 @@ import os
 import folder_paths
 import numpy as np
 import torch
-import datetime
+import time
 from funaudio_utils.pre import FunAudioLLMTool
 from funaudio_utils.download_models import download_cosyvoice2_05B,download_cosyvoice_300m, get_speaker_default_path, download_cosyvoice_300m_sft,download_cosyvoice_300m_instruct
 from funaudio_utils.cosyvoice_plus import CosyVoice1, CosyVoice2
@@ -19,9 +19,9 @@ from cosyvoice.utils.common import set_all_random_seed
 fAudioTool = FunAudioLLMTool()
 
 CATEGORY_NAME = "FunAudioLLM_V2/CosyVoice"
-SPEAKER_LIST = []
 
 folder_paths.add_model_folder_path("CosyVoice", os.path.join(folder_paths.models_dir, "CosyVoice"))
+folder_paths.add_model_folder_path("Speaker", os.path.join(os.path.join(folder_paths.models_dir, "CosyVoice"),"Speaker"))
 
 def return_audio(output,t0,spk_model):
     output_list = []
@@ -63,7 +63,10 @@ class CosyVoice2ZeroShotNode:
                 }),
             },
             "optional":{
-                "prompt_text":("STRING",),
+                "prompt_text":("STRING",{
+                    "default": "",
+                    "multiline": True
+                }),
                 "prompt_wav": ("AUDIO",),
                 "speaker_model":("SPK_MODEL",),
             }
@@ -83,10 +86,8 @@ class CosyVoice2ZeroShotNode:
             assert len(prompt_text) > 0, "prompt文本为空，您是否忘记输入prompt文本？"
             speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
             prompt_speech_16k = fAudioTool.postprocess(speech)
-            print('get zero_shot inference request')
-            print(model_dir)
             set_all_random_seed(seed)
-            output = cosyvoice.inference_zero_shot(tts_text, prompt_text, prompt_speech_16k,False,speed,text_frontend)
+            output = cosyvoice.inference_zero_shot(tts_text, prompt_text, prompt_speech_16k, False, speed, text_frontend)
             spk_model = cosyvoice.frontend.frontend_zero_shot(tts_text, prompt_text, prompt_speech_16k,24000)
             del spk_model['text']
             del spk_model['text_len']
@@ -95,8 +96,8 @@ class CosyVoice2ZeroShotNode:
             print('get zero_shot inference request')
             print(model_dir)
             set_all_random_seed(seed)
-            output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model,False,speed)
-            return return_audio(output,t0,speaker_model)
+            output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model, False, speed, text_frontend)
+            return return_audio(output,t0,None)
 
 
 # 跨语言音色克隆V2    
@@ -105,6 +106,7 @@ class CosyVoice2CrossLingualNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "prompt_wav": ("AUDIO",),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
@@ -119,38 +121,22 @@ class CosyVoice2CrossLingualNode:
                     "default": True
                 }),
             },
-            "optional":{
-                "prompt_wav": ("AUDIO",),
-                "speaker_model":("SPK_MODEL",),
-            }
         }
     
     CATEGORY = CATEGORY_NAME
-    RETURN_TYPES = ("AUDIO","SPK_MODEL",)
+    RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, text_frontend, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, speed, seed, text_frontend, prompt_wav=None):
         t0 = ttime()
         _, model_dir = download_cosyvoice2_05B()
         cosyvoice = CosyVoice2(model_dir)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
-        if speaker_model is None:
-            speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
-            prompt_speech_16k = fAudioTool.postprocess(speech)
-            print('get cross_lingual inference request')
-            print(model_dir)
-            set_all_random_seed(seed)
-            output = cosyvoice.inference_cross_lingual(tts_text, prompt_speech_16k, False, speed,text_frontend)
-            spk_model = cosyvoice.frontend.frontend_cross_lingual(tts_text, prompt_speech_16k,24000)
-            del spk_model['text']
-            del spk_model['text_len']
-            return return_audio(output,t0,spk_model)
-        else:
-            print('get cross_lingual inference request')
-            print(model_dir)
-            set_all_random_seed(seed)
-            output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model,False,speed)
-            return return_audio(output,t0,speaker_model)
+        speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
+        prompt_speech_16k = fAudioTool.postprocess(speech)
+        set_all_random_seed(seed)
+        output = cosyvoice.inference_cross_lingual(tts_text, prompt_speech_16k, False, speed, text_frontend)
+        return return_audio(output,t0,None)
 
 # 自然语言控制V2
 class CosyVoice2InstructNode:
@@ -158,11 +144,15 @@ class CosyVoice2InstructNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "prompt_wav": ("AUDIO",),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
                 }),
-                "instruct_text":("STRING",),
+                "instruct_text":("STRING",{
+                    "default": "",
+                    "multiline": True
+                }),
                 "speed":("FLOAT",{
                     "default": 1.0
                 }),
@@ -173,40 +163,22 @@ class CosyVoice2InstructNode:
                     "default": True
                 }),
             },
-            "optional":{
-                "prompt_text":("STRING",),
-                "prompt_wav": ("AUDIO",),
-                "speaker_model":("SPK_MODEL",),
-            }
         }
     
     CATEGORY = CATEGORY_NAME
-    RETURN_TYPES = ("AUDIO","SPK_MODEL",)
+    RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, instruct_text, speed, seed, text_frontend,prompt_text=None, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, instruct_text, speed, seed, text_frontend, prompt_wav=None):
         t0 = ttime()
         _, model_dir = download_cosyvoice2_05B()
         cosyvoice = CosyVoice2(model_dir)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
-        if speaker_model is None:
-            assert len(prompt_text) > 0, "prompt文本为空，您是否忘记输入prompt文本？"
-            speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
-            prompt_speech_16k = fAudioTool.postprocess(speech)
-            print('get instruct2 inference request')
-            print(model_dir)
-            set_all_random_seed(seed)
-            output = cosyvoice.inference_instruct2(tts_text, instruct_text,prompt_speech_16k, False, speed, text_frontend)
-            spk_model = cosyvoice.frontend.frontend_instruct2(tts_text, instruct_text, prompt_speech_16k,24000)
-            del spk_model['text']
-            del spk_model['text_len']
-            return return_audio(output,t0,spk_model)
-        else:
-            print('get instruct2 inference request')
-            print(model_dir)
-            set_all_random_seed(seed)
-            output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model,False,speed)
-            return return_audio(output,t0,speaker_model)
+        speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
+        prompt_speech_16k = fAudioTool.postprocess(speech)
+        set_all_random_seed(seed)
+        output = cosyvoice.inference_instruct2(tts_text, instruct_text,prompt_speech_16k, False, speed, text_frontend)
+        return return_audio(output,t0,None)
 
 # 零样本音色克隆
 class CosyVoiceZeroShotNode:
@@ -232,7 +204,10 @@ class CosyVoiceZeroShotNode:
                 }),
             },
             "optional":{
-                "prompt_text":("STRING",),
+                "prompt_text":("STRING",{
+                    "default": "",
+                    "multiline": True
+                }),
                 "prompt_wav": ("AUDIO",),
                 "speaker_model":("SPK_MODEL",),
             }
@@ -362,7 +337,10 @@ class CosyVoiceInstructNode:
                 "speaker_name":(s.sft_spk_list,{
                     "default":"中文女"
                 }),
-                "instruct_text":("STRING",),
+                "instruct_text":("STRING",{
+                    "default": "",
+                    "multiline": True
+                }),
                 "speed":("FLOAT",{
                     "default": 1.0
                 }),
@@ -387,29 +365,14 @@ class CosyVoiceInstructNode:
         output = cosyvoice.inference_instruct(tts_text, speaker_name, instruct_text, False, speed, text_frontend)
         return return_audio(output,t0,None)
 
-# 刷新音色列表
-def refresh_list():
-    file_list = []
-    for _, _, files in os.walk(get_speaker_default_path()):
-        for file in files:
-            if file.endswith('.pt'):
-                file_name = os.path.splitext(file)[0]  # 分离文件名和扩展名，并取文件名部分
-                file_list.append(file_name)
-    return file_list
-SPEAKER_LIST = refresh_list()
-
 # 加载音色模型
 class CosyVoiceLoadSpeakerModelNode:
-    sft_spk_list = SPEAKER_LIST
     @classmethod
     def INPUT_TYPES(s):
-
         return {
             "required":{
-                "speaker_name":(s.sft_spk_list,{
-                    "default":"none"
-                }),
-            }
+                "speaker_name": (folder_paths.get_filename_list("Speaker"), ),
+            },
         }
     
     CATEGORY = CATEGORY_NAME
@@ -417,11 +380,10 @@ class CosyVoiceLoadSpeakerModelNode:
     FUNCTION="generate"
 
     def generate(self, speaker_name):
-        model_dir = get_speaker_default_path()
         # 加载模型
-        spk_model_path = os.path.join(model_dir, speaker_name + ".pt")
+        spk_model_path = folder_paths.get_full_path_or_raise("Speaker",speaker_name)
         assert os.path.exists(spk_model_path), "Speaker model is not exist"
-        spk_model = torch.load(os.path.join(model_dir, speaker_name + ".pt"),map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+        spk_model = torch.load((spk_model_path),map_location=torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
         return (spk_model,)
 
 # 从网络加载音色模型    
@@ -471,8 +433,7 @@ class CosyVoiceSaveSpeakerModelNode:
                 # 检查文件重名
                 if file == speaker_name + '.pt':
                     print('文件名已存在，自动重命名！')
-                    now = datetime.datetime.now()
-                    speaker_name = speaker_name + f"{now.month}_{now.day}_{now.hour}_{now.minute}_{now.second}"
+                    speaker_name = speaker_name + f"_{int(time.time())}"
         print(f"saving speaker model {speaker_name} to {model_dir}")
         if not os.path.exists(model_dir):
             os.makedirs(model_dir)
