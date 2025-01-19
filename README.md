@@ -16,7 +16,7 @@
  - 使用python3.10，torch<=2.4.1
  - 原项目推荐的pynini2.1.6会有问题，需使用官方推荐的2.1.5：
  ```bash
- conda install -c conda-forge pynini=2.1.5 
+ conda install -y -c conda-forge pynini==2.1.5 
  pip install -r requirements.txt
  ```
  ---
