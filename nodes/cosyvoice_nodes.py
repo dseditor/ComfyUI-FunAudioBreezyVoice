@@ -13,7 +13,7 @@ import torch
 import time
 from funaudio_utils.pre import FunAudioLLMTool
 from funaudio_utils.download_models import download_cosyvoice2_05B,download_cosyvoice_300m, get_speaker_default_path, download_cosyvoice_300m_sft,download_cosyvoice_300m_instruct
-from funaudio_utils.cosyvoice_plus import CosyVoice1, CosyVoice2
+from funaudio_utils.cosyvoice_plus import CosyVoice1, CosyVoice2, TextReplacer
 from cosyvoice.utils.common import set_all_random_seed
 
 fAudioTool = FunAudioLLMTool()
@@ -61,6 +61,9 @@ class CosyVoice2ZeroShotNode:
                 "text_frontend":("BOOLEAN",{
                     "default": True
                 }),
+                "polyreplace":("BOOLEAN",{
+                    "default": False
+                }),
             },
             "optional":{
                 "prompt_text":("STRING",{
@@ -77,11 +80,15 @@ class CosyVoice2ZeroShotNode:
     
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, text_frontend, prompt_text=None, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, prompt_text=None, prompt_wav=None, speaker_model=None):
         t0 = ttime()
         _, model_dir = download_cosyvoice2_05B()
         cosyvoice = CosyVoice2(model_dir)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
+        if polyreplace:
+            # 多音节替换
+            print("You have enabled polyphonic word replacement.")
+            tts_text = TextReplacer.replace_tts_text(tts_text)
         if speaker_model is None:
             assert len(prompt_text) > 0, "prompt文本为空，您是否忘记输入prompt文本？"
             speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
@@ -120,6 +127,9 @@ class CosyVoice2CrossLingualNode:
                 "text_frontend":("BOOLEAN",{
                     "default": True
                 }),
+                "polyreplace":("BOOLEAN",{
+                    "default": False
+                }),
             },
         }
     
@@ -127,10 +137,14 @@ class CosyVoice2CrossLingualNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, text_frontend, prompt_wav=None):
+    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, prompt_wav=None):
         t0 = ttime()
         _, model_dir = download_cosyvoice2_05B()
         cosyvoice = CosyVoice2(model_dir)
+        if polyreplace:
+            # 多音节替换
+            print("You have enabled polyphonic word replacement.")
+            tts_text = TextReplacer.replace_tts_text(tts_text)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
         speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
         prompt_speech_16k = fAudioTool.postprocess(speech)
@@ -162,6 +176,9 @@ class CosyVoice2InstructNode:
                 "text_frontend":("BOOLEAN",{
                     "default": True
                 }),
+                "polyreplace":("BOOLEAN",{
+                    "default": False
+                }),
             },
         }
     
@@ -169,10 +186,14 @@ class CosyVoice2InstructNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, instruct_text, speed, seed, text_frontend, prompt_wav=None):
+    def generate(self, tts_text, instruct_text, speed, seed, text_frontend, polyreplace, prompt_wav=None):
         t0 = ttime()
         _, model_dir = download_cosyvoice2_05B()
         cosyvoice = CosyVoice2(model_dir)
+        if polyreplace:
+            # 多音节替换
+            print("You have enabled polyphonic word replacement.")
+            tts_text = TextReplacer.replace_tts_text(tts_text)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
         speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
         prompt_speech_16k = fAudioTool.postprocess(speech)

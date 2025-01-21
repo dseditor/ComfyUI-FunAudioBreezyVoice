@@ -1,5 +1,6 @@
 # 已支持CosyVoice2
 ## 新增内容：
+ - 新增了多音字替换功能，配置在`funaudio_utils/多音字纠正配置.txt`。感谢https://github.com/touge/ComfyUI-NCE_CosyVoice/tree/main
  - 新增了3个CosyVoice2节点。
  - 整理了节点组。
  - 从官方更新了CosyVoice、SenseVoice、match，更新时间`2025-1-18`
