@@ -22,7 +22,9 @@ from inspiremusic.music_tokenizer.vqvae import VQVAE
 from inspiremusic.wavtokenizer.decoder.pretrained import WavTokenizer
 from torch.cuda.amp import autocast
 import logging
+import torch
 import os
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -56,6 +58,7 @@ class InspireMusicModel:
         assert self.stream_scale_factor >= 1, 'stream_scale_factor should be greater than 1, change it according to your actual rtf'
         self.llm_context = torch.cuda.stream(torch.cuda.Stream(self.device)) if torch.cuda.is_available() else nullcontext()
         self.lock = threading.Lock()
+        # dict used to store session related variable
         self.music_token_dict = {}
         self.llm_end_dict = {}
         self.mel_overlap_dict = {}
@@ -66,8 +69,8 @@ class InspireMusicModel:
         if llm_model is not None:
             self.llm.load_state_dict(torch.load(llm_model, map_location=self.device))
             self.llm.to(self.device).eval()
-            if self.fp16 is True:
-                self.llm.half()
+        else:
+            self.llm = None
         if flow_model is not None:
             self.flow.load_state_dict(torch.load(flow_model, map_location=self.device))
             self.flow.to(self.device).eval()
@@ -110,28 +113,54 @@ class InspireMusicModel:
         with self.llm_context:
             local_res = []
             with autocast(enabled=self.fp16):
-                for i in self.llm.inference(text=text.to(self.device),
-                                            text_len=torch.tensor([text.shape[1]], dtype=torch.int32).to(self.device),
-                                            audio_token=audio_token.to(self.device),
-                                            audio_token_len=audio_token_len.to(self.device),
-                                            prompt_text=prompt_text.to(self.device),
-                                            prompt_text_len=torch.tensor([prompt_text.shape[1]], dtype=torch.int32).to(self.device),
-                                            prompt_audio_token=llm_prompt_audio_token.to(self.device),
-                                            prompt_audio_token_len=torch.tensor([llm_prompt_audio_token.shape[1]], dtype=torch.int32).to(self.device),
-                                            embeddings=embeddings,
-                                            sampling=350,
-                                            duration_to_gen=duration_to_gen,
-                                            task=task,
-                                            ):
+                inference_kwargs = {
+                    'text': text.to(self.device),
+                    'text_len': torch.tensor([text.shape[1]], dtype=torch.int32).to(self.device),
+                    'prompt_text': prompt_text.to(self.device),
+                    'prompt_text_len': torch.tensor([prompt_text.shape[1]], dtype=torch.int32).to(self.device),
+                    'prompt_audio_token': llm_prompt_audio_token.to(self.device),
+                    'prompt_audio_token_len': torch.tensor([llm_prompt_audio_token.shape[1]], dtype=torch.int32).to(self.device),
+                    'embeddings': embeddings,
+                    'duration_to_gen': duration_to_gen,
+                    'task': task
+                    }
+
+                if audio_token is not None:
+                    inference_kwargs['audio_token'] = audio_token.to(self.device)
+                else:
+                    inference_kwargs['audio_token'] = torch.Tensor([0]).to(self.device)
+
+                if audio_token_len is not None:
+                    inference_kwargs['audio_token_len'] = audio_token_len.to(self.device)
+                else:
+                    inference_kwargs['audio_token_len'] = torch.Tensor([0]).to(self.device)
+
+                for i in self.llm.inference(**inference_kwargs):
                     local_res.append(i)
+
             self.music_token_dict[uuid] = local_res
         self.llm_end_dict[uuid] = True
 
-    def token2wav(self, token, token_len, uuid, sample_rate, finalize=False):
-        codec_embed = self.flow.inference(token=token.to(self.device),
-                                          token_len=token_len.to(self.device),
-                                          sample_rate=sample_rate
-                                         )
+    # def token2wav(self, token, token_len, text, text_len, uuid, sample_rate, finalize=False):
+    def token2wav(self, token, token_len, uuid, sample_rate, finalize=False, flow_cfg=None):
+        # if self.flow is not None:
+        #     if isinstance(self.flow,MaskedDiffWithText):
+        #         codec_embed = self.flow.inference(token=token.to(self.device),
+        #                                         token_len=token_len.to(self.device),
+        #                                         text_token=text,
+        #                                         text_token_len=text_len,
+        #                                         )
+        #     else:  
+        if flow_cfg is not None:
+            codec_embed = self.flow.inference_cfg(token=token.to(self.device),
+                                token_len=token_len.to(self.device),
+                                sample_rate=sample_rate
+                                )
+        else:   
+            codec_embed = self.flow.inference(token=token.to(self.device),
+                                token_len=token_len.to(self.device),
+                                sample_rate=sample_rate
+                                )
         # use music_tokenizer decoder
         wav = self.music_tokenizer.generator(codec_embed)
         wav = wav.squeeze(0).cpu().detach()
@@ -139,8 +168,9 @@ class InspireMusicModel:
 
     def acoustictoken2wav(self, token):
         # use music_tokenizer to generate waveform from token
-        codec = token.view(1, -1, 4)
-        codec_embed = self.music_tokenizer.quantizer.embed(torch.tensor(codec).long().to(self.device)).cuda()
+        token = token.view(token.size(0), -1, 4)
+        # codec = token.view(1, -1, 4)
+        codec_embed = self.music_tokenizer.quantizer.embed(torch.tensor(token).long().to(self.device)).cuda()
         wav = self.music_tokenizer.generator(codec_embed)
         wav = wav.squeeze(0).cpu().detach()
         return wav
@@ -154,6 +184,7 @@ class InspireMusicModel:
         wav = wav.cpu().detach()
         return wav
 
+    @torch.inference_mode()
     def inference(self, text, audio_token, audio_token_len, text_token, text_token_len, embeddings=None,
                   prompt_text=torch.zeros(1, 0, dtype=torch.int32),
                   llm_prompt_audio_token=torch.zeros(1, 0, dtype=torch.int32),
@@ -171,6 +202,7 @@ class InspireMusicModel:
         if self.llm:
             with self.lock:
                 self.music_token_dict[this_uuid], self.llm_end_dict[this_uuid] = [], False
+            
             p = threading.Thread(target=self.llm_job, args=(text_token, audio_token, audio_token_len, prompt_text, llm_prompt_audio_token, embeddings, this_uuid, duration_to_gen, task))
             p.start()
 
@@ -207,18 +239,21 @@ class InspireMusicModel:
             # deal with all tokens
             if self.fast:
                 if task == "reconstruct":
+                    assert audio_token is None
                     this_music_token = audio_token
                     this_music_audio = self.acoustictoken2wav(token=this_music_token)
                 else:
                     if self.llm:
                         p.join()
+                        print(len(self.music_token_dict[this_uuid]))
                         this_music_token = torch.concat(self.music_token_dict[this_uuid], dim=1)
+                        print(this_music_token.shape)
                     else:
                         this_music_token = text_token
-                        
 
                     logging.info("using wavtokenizer generator without flow matching")
                     this_music_audio = self.semantictoken2wav(token=this_music_token)
+                    print(this_music_audio.shape)
 
             else:
                 if self.llm:

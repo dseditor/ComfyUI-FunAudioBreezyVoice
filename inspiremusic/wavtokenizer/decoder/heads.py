@@ -39,7 +39,6 @@ class ISTFTHead(FourierHead):
         out_dim = n_fft + 2
         self.out = torch.nn.Linear(dim, out_dim)
         self.istft = ISTFT(n_fft=n_fft, hop_length=hop_length, win_length=n_fft, padding=padding)
-        self.convert_to_real = True
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -64,11 +63,8 @@ class ISTFTHead(FourierHead):
         # phase = torch.atan2(y, x)
         # S = mag * torch.exp(phase * 1j)
         # better directly produce the complex value 
-        
-        if self.convert_to_real:
-            S = mag * (x + y)
-        else:
-            S = mag * (x + 1j * y)
+
+        S = mag * (x + 1j * y)
 
         audio = self.istft(S)
         return audio

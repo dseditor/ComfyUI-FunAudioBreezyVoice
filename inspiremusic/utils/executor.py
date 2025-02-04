@@ -21,7 +21,6 @@ import torch
 import torch.distributed as dist
 
 from inspiremusic.utils.train_utils import update_parameter_and_lr, log_per_step, log_per_save, batch_forward, batch_backward, save_model, inspiremusic_join
-from inspiremusic.utils.data_utils import batch_processing
 from torch.cuda.amp import GradScaler, autocast
 
 class Executor:

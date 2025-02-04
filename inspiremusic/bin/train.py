@@ -66,7 +66,7 @@ def get_args():
                         help='prefetch number')
     parser.add_argument('--pin_memory',
                         action='store_true',
-                        default=False,
+                        default=True,
                         help='Use pinned memory buffers used for reading')
     parser.add_argument('--deepspeed.save_states',
                         dest='save_states',

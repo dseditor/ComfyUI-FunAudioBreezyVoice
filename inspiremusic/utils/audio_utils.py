@@ -47,6 +47,15 @@ _BoolLike_co = Union[bool, np.bool_]
 _IntLike_co = Union[_BoolLike_co, int, "np.integer[Any]"]
 _FloatLike_co = Union[_IntLike_co, float, "np.floating[Any]"]
 
+def process_audio(file_path, target_sample_rate=24000):
+    audio, sample_rate = torchaudio.load(file_path)
+    # Check if the audio needs to be resampled
+    if sample_rate != target_sample_rate:
+        audio = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=target_sample_rate)(audio)
+    # Convert stereo to mono (if necessary)
+    audio = audio.mean(dim=0, keepdim=True) if audio.size(0) == 2 else audio
+    return audio, target_sample_rate
+
 def load_wav(full_path):
     sampling_rate, data = read(full_path)
     return data, sampling_rate
@@ -117,27 +126,37 @@ def mel_spectrogram(y, n_fft, num_mels, sampling_rate, hop_size, win_size, fmin,
 
     return spec
 
-def fade_out(audio, sr, fade_duration):
+
+def fade_out(audio: torch.Tensor, sample_rate: int,
+             fade_duration: float) -> torch.Tensor:
     """
     Apply a linear fade-out effect to the given audio waveform.
-    
+
     Parameters:
-    audio (numpy array): The audio waveform array.
-    sr (int): Sample rate of the audio.
-    fade_duration (int or float): Duration of the fade-out effect in seconds.
-    
+    audio (torch.Tensor): The audio waveform tensor.
+    sample_rate (int): Sample rate of the audio.
+    fade_duration (float): Duration of the fade-out effect in seconds.
+
     Returns:
-    numpy array: The audio with the fade-out effect applied.
+    torch.Tensor: The audio with the fade-out effect applied.
     """
-    fade_samples = int(fade_duration * sr)
+    fade_samples = int(fade_duration * sample_rate)
 
     if fade_samples > audio.shape[1]:
-        fade_samples = int(audio.shape[1] * sr / 2)
+        fade_samples = audio.shape[
+            1]  # use the whole length of audio if necessary
 
-    fade_out_envelope = np.linspace(1.0, 0.0, fade_samples)
-    audio[:, -fade_samples:] *= fade_out_envelope
-        
-    return audio
+    fade_out_envelope = torch.linspace(1.0, 0.0, fade_samples,
+                                       dtype=audio.dtype, device=audio.device)
+
+    fade_section = audio[:, -fade_samples:].clone()
+
+    fade_section *= fade_out_envelope
+
+    faded_audio = audio.clone()
+    faded_audio[:, -fade_samples:] = fade_section
+
+    return faded_audio
 
 def split_wav_into_chunks(num_samples, wav, max_chunk_size, minimum_chunk_size=720):
     num_chunks = (num_samples + max_chunk_size - 1) // max_chunk_size  # Ceiling division

@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 import torch
 from torch import nn, view_as_real, view_as_complex
+import pdb
 
 class ISTFT(nn.Module):
     """
@@ -28,7 +29,6 @@ class ISTFT(nn.Module):
         self.win_length = win_length
         window = torch.hann_window(win_length)
         self.register_buffer("window", window)
-        self.convert_to_real = False
 
     def forward(self, spec: torch.Tensor) -> torch.Tensor:
         """
@@ -52,8 +52,53 @@ class ISTFT(nn.Module):
         assert spec.dim() == 3, "Expected a 3D tensor as input"
         B, N, T = spec.shape
 
-        if self.convert_to_real:
-            spec = torch.cat((spec.real, spec.imag), dim=0)
+        # Inverse FFT
+        ifft = torch.fft.irfft(spec, self.n_fft, dim=1, norm="backward")
+        ifft = ifft * self.window[None, :, None]
+
+        # Overlap and Add
+        output_size = (T - 1) * self.hop_length + self.win_length
+        y = torch.nn.functional.fold(
+            ifft, output_size=(1, output_size), kernel_size=(1, self.win_length), stride=(1, self.hop_length),
+        )[:, 0, 0, pad:-pad]
+
+        # Window envelope
+        window_sq = self.window.square().expand(1, T, -1).transpose(1, 2)
+        window_envelope = torch.nn.functional.fold(
+            window_sq, output_size=(1, output_size), kernel_size=(1, self.win_length), stride=(1, self.hop_length),
+        ).squeeze()[pad:-pad]
+
+        # Normalize
+        # assert (window_envelope > 1e-11).all()
+        if not torch.all(window_envelope > 1e-11):
+            window_envelope = torch.clamp(window_envelope, min=1e-11)
+        
+        y = y / window_envelope
+
+        return y
+
+    def onnx_forward(self, spec: torch.Tensor) -> torch.Tensor:
+        """
+        Compute the Inverse Short Time Fourier Transform (ISTFT) of a complex spectrogram.
+
+        Args:
+            spec (Tensor): Input complex spectrogram of shape (B, N, T), where B is the batch size,
+                            N is the number of frequency bins, and T is the number of time frames.
+
+        Returns:
+            Tensor: Reconstructed time-domain signal of shape (B, L), where L is the length of the output signal.
+        """
+        if self.padding == "center":
+            # Fallback to pytorch native implementation
+            return torch.istft(spec, self.n_fft, self.hop_length, self.win_length, self.window, center=True)
+        elif self.padding == "same":
+            pad = (self.win_length - self.hop_length) // 2
+        else:
+            raise ValueError("Padding must be 'center' or 'same'.")
+
+        assert spec.dim() == 3, "Expected a 3D tensor as input"
+        B, N, T = spec.shape
+        pdb.set_trace()
         # Inverse FFT
         ifft = torch.fft.irfft(spec, self.n_fft, dim=1, norm="backward")
         ifft = ifft * self.window[None, :, None]

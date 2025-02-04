@@ -102,29 +102,27 @@ def init_weights(m, mean=0.0, std=0.01):
     if classname.find("Conv") != -1:
         m.weight.data.normal_(mean, std)
 
-def topk_sampling(weighted_scores, decoded_tokens, sampling, top_p=0.8, top_k=25, win_size=10, tau_r=0.1):
+def topk_sampling(weighted_scores, decoded_tokens, top_k=25):
     zeros = weighted_scores.new_ones(weighted_scores.shape) * float('-inf')
-
     values,indices =  torch.topk(weighted_scores,top_k)
     zeros.scatter_(-1, indices, values)
-
-    return random_sampling(zeros,decoded_tokens,sampling)
+    return random_sampling(zeros,decoded_tokens)
 
 # Repetition Aware Sampling in VALL-E 2
 
-def ras_sampling(weighted_scores, decoded_tokens, sampling, top_p=0.8, top_k=25, win_size=10, tau_r=0.1):
+def ras_sampling(weighted_scores, decoded_tokens, top_p=0.8, top_k=25, win_size=10, tau_r=0.1):
     top_ids = nucleus_sampling(weighted_scores, top_p=top_p, top_k=top_k)
     rep_num = (torch.tensor(decoded_tokens[-win_size:]).to(weighted_scores.device) == top_ids).sum().item()
     if rep_num >= win_size * tau_r:
-        top_ids = random_sampling(weighted_scores, decoded_tokens, sampling)
+        top_ids = random_sampling(weighted_scores, decoded_tokens)
     return top_ids
 
-def caras_sampling(weighted_scores, decoded_tokens, sampling, top_p=0.8, top_k=25, win_size=10, tau_r=0.1):
+def caras_sampling(weighted_scores, decoded_tokens, top_p=0.8, top_k=25, win_size=10, tau_r=0.1):
     weighted_scores, cfg_weighted_scores = weighted_scores
     top_ids = nucleus_sampling(weighted_scores, top_p=top_p, top_k=top_k)
     rep_num = (torch.tensor(decoded_tokens[-win_size:]).to(weighted_scores.device) == top_ids).sum().item()
     if rep_num >= win_size * tau_r:
-        top_ids = random_sampling(cfg_weighted_scores, decoded_tokens, sampling)
+        top_ids = random_sampling(cfg_weighted_scores, decoded_tokens)
     return top_ids
 
 def nucleus_sampling(weighted_scores, top_p=0.8, top_k=25):
@@ -145,7 +143,7 @@ def nucleus_sampling(weighted_scores, top_p=0.8, top_k=25):
     return top_ids
 
 
-def random_sampling(weighted_scores, decoded_tokens, sampling):
+def random_sampling(weighted_scores, decoded_tokens):
     top_ids = weighted_scores.softmax(dim=0).multinomial(1, replacement=True)
     return top_ids
 

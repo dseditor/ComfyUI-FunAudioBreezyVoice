@@ -104,25 +104,13 @@ class MaskedDiff(torch.nn.Module):
         
         mask = (~make_pad_mask(feat_len)).to(h)
 
-        if self.interpolate:
-            feat = F.interpolate(feat.unsqueeze(dim=1), size=h.shape[1:], mode="nearest").squeeze(dim=1)
-            loss, _ = self.decoder.compute_loss(
-                feat.transpose(1, 2).contiguous(),
-                mask.unsqueeze(1),
-                h.transpose(1, 2).contiguous(),
-                None,
-                cond=conds
-            )
-
-        else:
-            feat = feat 
-            loss, _ = self.decoder.compute_loss(
+        loss, _ = self.decoder.compute_loss(
                 feat,
                 mask.unsqueeze(1),
                 h.transpose(1, 2).contiguous(),
                 None,
                 cond=conds
-            )
+        )
             
         return {'loss': loss}
 
@@ -130,8 +118,7 @@ class MaskedDiff(torch.nn.Module):
     def inference(self,
                   token,
                   token_len,
-                  sample_rate,
-                  refactor: int = 8):
+                  sample_rate):
         assert token.shape[0] == 1
 
         token = self.input_embedding(torch.clamp(token, min=0)) 

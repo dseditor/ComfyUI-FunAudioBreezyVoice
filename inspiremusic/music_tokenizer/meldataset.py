@@ -21,80 +21,33 @@ import librosa
 import numpy as np
 import torch.utils.data
 from librosa.filters import mel as librosa_mel_fn
-import torchaudio.transforms as transforms
-
 
 def load_wav(full_path, sr):
     wav, sr = librosa.load(full_path, sr=sr)
     return wav, sr
 
-
 def dynamic_range_compression(x, C=1, clip_val=1e-5):
     return np.log(np.clip(x, a_min=clip_val, a_max=None) * C)
-
 
 def dynamic_range_decompression(x, C=1):
     return np.exp(x) / C
 
-
 def dynamic_range_compression_torch(x, C=1, clip_val=1e-5):
     return torch.log(torch.clamp(x, min=clip_val) * C)
 
-
 def dynamic_range_decompression_torch(x, C=1):
     return torch.exp(x) / C
-
 
 def spectral_normalize_torch(magnitudes):
     output = dynamic_range_compression_torch(magnitudes)
     return output
 
-
 def spectral_de_normalize_torch(magnitudes):
     output = dynamic_range_decompression_torch(magnitudes)
     return output
 
-
 mel_basis = {}
 hann_window = {}
-
-
-# def mel_spectrogram(y, n_fft, num_mels, sampling_rate,
-#                     hop_size, win_size, fmin=0.0, fmax=None, center=False):
-#     """
-#     Compute Mel spectrogram using PyTorch.
-
-#     Args:
-#         y (Tensor): Input audio waveform tensor of shape (C, L) where C is the number of channels and L is the signal length.
-#         n_fft (int): Size of the FFT window.
-#         num_mels (int): Number of Mel bins.
-#         sampling_rate (int): Sampling rate of the input audio.
-#         hop_size (int): Number of samples between successive frames.
-#         win_size (int): Size of the window.
-#         fmin (float): Minimum frequency.
-#         fmax (float): Maximum frequency.
-#         center (bool): If True, pads the input tensor with zeros on both sides to make it centered.
-
-#     Returns:
-#         Tensor: Mel spectrogram tensor of shape (N, num_mels, T) where N is the batch size, num_mels is the number of Mel bins, and T is the number of frames.
-#     """
-#     # Compute STFT
-#     stft = torch.stft(y, n_fft=n_fft, hop_length=hop_size, win_length=win_size,
-#                       window=torch.hann_window(win_size, periodic=True).to(y.device), 
-#                       center=center, pad_mode='reflect', normalized=False,
-#                       onesided=True, return_complex=True)
-
-#     # Get magnitude spectrogram
-#     magnitude = torch.abs(stft)
-
-#     # Define Mel filterbank
-#     mel_filterbank = transforms.MelScale(n_mels=num_mels, sample_rate=sampling_rate,
-#                                          f_min=fmin, f_max=fmax, n_stft=n_fft // 2 + 1).to(y.device)
-
-#     # Apply Mel filterbank
-#     mel_spectrogram = mel_filterbank(magnitude)
-
-#     return mel_spectrogram
 
 ## modified to get stft with return complex value = True for pytorch ver2.0
 def mel_spectrogram(y,
@@ -106,10 +59,6 @@ def mel_spectrogram(y,
                     fmin,
                     fmax,
                     center=False):
-    #if torch.min(y) < -1.:
-    #    print('min value is ', torch.min(y))
-    #if torch.max(y) > 1.:
-    #    print('max value is ', torch.max(y))
 
     global mel_basis, hann_window
     if fmax not in mel_basis:

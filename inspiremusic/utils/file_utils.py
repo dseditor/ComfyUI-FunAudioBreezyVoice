@@ -20,6 +20,25 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s')
 
+def read_trans(list_file):
+    trans = {}
+    with open(list_file, 'r', encoding='utf8') as fin:
+        for line in fin:
+            sec = line.strip().split("\t")
+            if len(sec) > 1:
+                if sec[0] not in trans.keys():
+                    trans[sec[0]] = sec[1]
+    return trans
+
+def read_scp(list_file):
+    scp = {}
+    with open(list_file, 'r', encoding='utf8') as fin:
+        for line in fin:
+            sec = line.strip().split(" ")
+            if len(sec) > 1:
+                if sec[0] not in scp.keys():
+                    scp[sec[0]] = sec[1]
+    return scp
 
 def read_lists(list_file):
     lists = []

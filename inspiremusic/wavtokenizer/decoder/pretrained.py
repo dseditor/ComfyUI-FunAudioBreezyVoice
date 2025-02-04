@@ -103,30 +103,25 @@ class WavTokenizer(nn.Module):
         for k, v in state_dict_raw.items():
             if k.startswith('backbone.') or k.startswith('head.') or k.startswith('feature_extractor.'):
                 state_dict[k] = v
-        # if isinstance(model.feature_extractor, EncodecFeatures):
-        #     encodec_parameters = {
-        #         "feature_extractor.encodec." + key: value
-        #         for key, value in model.feature_extractor.encodec.state_dict().items()
-        #     }
-        #     state_dict.update(encodec_parameters)
+
         model.load_state_dict(state_dict)
         model.eval()
         return model
 
-    # @classmethod
-    # def estimator(self, config_path, model_path):
-    #     """
-    #     Class method to create a new Vocos model instance from a pre-trained model stored in the Hugging Face model hub.
-    #     """
-    #     model = self.from_hparams_feat(config_path)
-    #     state_dict_raw = torch.load(model_path, map_location="cpu")['state_dict']
-    #     state_dict = dict()
-    #     for k, v in state_dict_raw.items():
-    #         if k.startswith('backbone.') or k.startswith('head.') or k.startswith('feature_extractor.'):
-    #             state_dict[k] = v
-    #     model.load_state_dict(state_dict)
-    #     model.eval()
-    #     return model
+    @classmethod
+    def estimator(self, config_path, model_path):
+        """
+        Class method to create a new Vocos model instance from a pre-trained model stored in the Hugging Face model hub.
+        """
+        model = self.from_hparams_feat(config_path)
+        state_dict_raw = torch.load(model_path, map_location="cpu")['state_dict']
+        state_dict = dict()
+        for k, v in state_dict_raw.items():
+            if k.startswith('backbone.') or k.startswith('head.') or k.startswith('feature_extractor.'):
+                state_dict[k] = v
+        model.load_state_dict(state_dict)
+        model.eval()
+        return model
 
     @classmethod
     def from_pretrained0911(self, config_path, model_folder_path):

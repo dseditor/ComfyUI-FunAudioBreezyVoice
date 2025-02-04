@@ -66,7 +66,7 @@ class QwenTokenizer(AbsTokenizer):
 
 
 def get_qwen_vocab_size(token_type: str):
-    if "qwen1.5" in token_type.lower() or "qwen2.0" in token_type.lower():
+    if "qwen1.5" in token_type.lower() or "qwen2.0" in token_type.lower() or "qwen2.5" in token_type.lower():
         # 293 for special and extra tokens, including endoftext, im_start, im_end, endofprompt and others in the future.
         # model.vocab_size = 151936, tokenizer.vocab_size = 151643
         # NOTE: the first three special tokens (endoftext, im_start, im_end) are trained in Chat series models,
