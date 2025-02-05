@@ -14,6 +14,7 @@ from modelscope import snapshot_download
 # Download the model
 base_cosyvoice_model_path = os.path.join(folder_paths.models_dir, "CosyVoice")
 base_sensevoice_model_path = os.path.join(folder_paths.models_dir, "SenseVoice")
+base_InspireMusic_model_path = os.path.join(folder_paths.models_dir, "InspireMusic")
 
 def download_cosyvoice2_05B():
     model_name = "CosyVoice2-0.5B"
@@ -55,6 +56,38 @@ def download_cosyvoice_300m_instruct():
     model_dir = os.path.join(base_cosyvoice_model_path, model_name)
     snapshot_download(model_id=model_id, local_dir=model_dir)
     return model_name, model_dir
+
+def download_inspiremusic_base_24k():
+    model_name = "InspireMusic-Base-24kHz"
+    model_id = "iic/InspireMusic-Base-24kHz"
+    model_dir = os.path.join(base_InspireMusic_model_path, model_name)
+    snapshot_download(model_id=model_id, local_dir=model_dir)
+    return model_name, model_dir
+def download_inspiremusic_base_48k():
+    model_name = "InspireMusic"
+    model_id = "iic/InspireMusic"
+    model_dir = os.path.join(base_InspireMusic_model_path, model_name)
+    snapshot_download(model_id=model_id, local_dir=model_dir)
+    return model_name, model_dir
+def download_inspiremusic_1dot5B_24k():
+    model_name = "InspireMusic-1.5B-24kHz"
+    model_id = "iic/InspireMusic-1.5B-24kHz"
+    model_dir = os.path.join(base_InspireMusic_model_path, model_name)
+    snapshot_download(model_id=model_id, local_dir=model_dir)
+    return model_name, model_dir
+def download_inspiremusic_1dot5B_48k():
+    model_name = "InspireMusic-1.5B"
+    model_id = "iic/InspireMusic-1.5B"
+    model_dir = os.path.join(base_InspireMusic_model_path, model_name)
+    snapshot_download(model_id=model_id, local_dir=model_dir)
+    return model_name, model_dir
+def download_inspiremusic_1dot5B_long():
+    model_name = "InspireMusic-1.5B-Long"
+    model_id = "iic/InspireMusic-1.5B-Long"
+    model_dir = os.path.join(base_InspireMusic_model_path, model_name)
+    snapshot_download(model_id=model_id, local_dir=model_dir)
+    return model_name, model_dir
+
 
 def get_speaker_default_path():
     return os.path.join(base_cosyvoice_model_path, "Speaker")

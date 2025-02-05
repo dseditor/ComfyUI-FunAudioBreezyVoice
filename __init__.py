@@ -8,6 +8,7 @@ Description: file content
 '''
 from .nodes.cosyvoice_nodes import *
 from .nodes.sensevoice_nodes import *
+from .nodes.inspiremusic_nodes import *
 
 NODE_CONFIG = {
     "CosyVoice2ZeroShotNode": {
@@ -53,6 +54,16 @@ NODE_CONFIG = {
     "SenseVoiceNode": {
         "class": SenseVoiceNode,
         "name": "SenseVoice 语音识别"
+    },
+    
+    "TextToMusic": {
+        "class": TextToMusic,
+        "name": "文本生成音乐"
+    },
+    
+    "MusicContinuation": {
+        "class": MusicContinuation,
+        "name": "音乐延续"
     }
 }
 

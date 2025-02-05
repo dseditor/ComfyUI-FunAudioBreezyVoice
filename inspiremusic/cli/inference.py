@@ -164,18 +164,18 @@ class InspireMusicUnified:
 
                         music_audio = music_audio.repeat(2, 1)
 
-                        if output_format in ["wav", "flac"]:
-                            torchaudio.save(music_fn, music_audio,
-                                            sample_rate=self.output_sample_rate,
-                                            encoding="PCM_S",
-                                            bits_per_sample=24)
-                        elif output_format in ["mp3", "m4a"]:
-                            torchaudio.backend.sox_io_backend.save(
-                                filepath=music_fn, src=music_audio,
-                                sample_rate=self.output_sample_rate,
-                                format=output_format)
-                        else:
-                            logging.info("Format is not supported. Please choose from wav, mp3, m4a, flac.")
+                        # if output_format in ["wav", "flac"]:
+                        #     torchaudio.save(music_fn, music_audio,
+                        #                     sample_rate=self.output_sample_rate,
+                        #                     encoding="PCM_S",
+                        #                     bits_per_sample=24)
+                        # elif output_format in ["mp3", "m4a"]:
+                        #     torchaudio.backend.sox_io_backend.save(
+                        #         filepath=music_fn, src=music_audio,
+                        #         sample_rate=self.output_sample_rate,
+                        #         format=output_format)
+                        # else:
+                        #     logging.info("Format is not supported. Please choose from wav, mp3, m4a, flac.")
 
                     except Exception as e:
                         logging.error(f"Error saving file: {e}")
@@ -187,6 +187,7 @@ class InspireMusicUnified:
 
             else:
                 logging.error(f"Generated audio length is shorter than minimum required audio length.")
+        return music_audio
 
 def get_args():
     parser = argparse.ArgumentParser(description='Run inference with your model')
@@ -259,7 +260,7 @@ def get_args():
     args = parser.parse_args()
 
     if not args.model_dir:
-        args.model_dir = os.path.join("E:/Tools/ComfyUI_Audio/ComfyUI/models/InspireMusic", args.model_name)
+        args.model_dir = os.path.join("../../pretrained_models", args.model_name)
 
     print(args)
     return args
@@ -294,6 +295,4 @@ def main():
                 trim = args.trim)
 
 if __name__ == "__main__":
-    import sys
-    sys.path.append("E:/Tools/ComfyUI_Audio/ComfyUI/custom_nodes/ComfyUI-FunAudioLLM_V2")
     main()
