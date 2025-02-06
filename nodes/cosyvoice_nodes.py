@@ -48,6 +48,9 @@ class CosyVoice2ZeroShotNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
@@ -80,9 +83,9 @@ class CosyVoice2ZeroShotNode:
     
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, prompt_text=None, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, speed, seed, text_frontend, polyreplace,auto_download, prompt_text=None, prompt_wav=None, speaker_model=None):
         t0 = ttime()
-        _, model_dir = download_cosyvoice2_05B()
+        _, model_dir = download_cosyvoice2_05B(auto_download)
         cosyvoice = CosyVoice2(model_dir)
         assert len(tts_text) > 0, "tts_text不能为空！！！"
         if polyreplace:
@@ -113,6 +116,9 @@ class CosyVoice2CrossLingualNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "prompt_wav": ("AUDIO",),
                 "tts_text":("STRING", {
                     "default": "",
@@ -137,9 +143,9 @@ class CosyVoice2CrossLingualNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, prompt_wav=None):
+    def generate(self, tts_text, speed, seed, text_frontend, polyreplace,auto_download, prompt_wav=None):
         t0 = ttime()
-        _, model_dir = download_cosyvoice2_05B()
+        _, model_dir = download_cosyvoice2_05B(auto_download)
         cosyvoice = CosyVoice2(model_dir)
         if polyreplace:
             # 多音节替换
@@ -158,6 +164,9 @@ class CosyVoice2InstructNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "prompt_wav": ("AUDIO",),
                 "tts_text":("STRING", {
                     "default": "",
@@ -186,9 +195,9 @@ class CosyVoice2InstructNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, instruct_text, speed, seed, text_frontend, polyreplace, prompt_wav=None):
+    def generate(self, tts_text, instruct_text, speed, seed, text_frontend, polyreplace,auto_download, prompt_wav=None):
         t0 = ttime()
-        _, model_dir = download_cosyvoice2_05B()
+        _, model_dir = download_cosyvoice2_05B(auto_download)
         cosyvoice = CosyVoice2(model_dir)
         if polyreplace:
             # 多音节替换
@@ -207,6 +216,9 @@ class CosyVoiceZeroShotNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
@@ -239,9 +251,9 @@ class CosyVoiceZeroShotNode:
     
     FUNCTION="generate"
 
-    def generate(self, tts_text, speed, seed, use_25hz,text_frontend, prompt_text=None, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, speed, seed, use_25hz,text_frontend,auto_download, prompt_text=None, prompt_wav=None, speaker_model=None):
         t0 = ttime()
-        _, model_dir = download_cosyvoice_300m(use_25hz)
+        _, model_dir = download_cosyvoice_300m(use_25hz,auto_download)
         cosyvoice = CosyVoice1(model_dir)
         if speaker_model is None:
             assert len(prompt_text) > 0, "prompt文本为空，您是否忘记输入prompt文本？"
@@ -270,6 +282,9 @@ class CosyVoiceSFTNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "tts_text":("STRING",  {
                     "default": "",
                     "multiline": True
@@ -296,9 +311,9 @@ class CosyVoiceSFTNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, speaker_name, speed, seed, use_25hz, text_frontend):
+    def generate(self, tts_text, speaker_name, speed, seed, use_25hz, text_frontend,auto_download):
         t0 = ttime()
-        _, model_dir = download_cosyvoice_300m_sft(use_25hz)
+        _, model_dir = download_cosyvoice_300m_sft(use_25hz,auto_download)
         cosyvoice = CosyVoice1(model_dir)
         set_all_random_seed(seed)
         output = cosyvoice.inference_sft(tts_text, speaker_name, False, speed, text_frontend)
@@ -310,6 +325,9 @@ class CosyVoiceCrossLingualNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
@@ -334,9 +352,9 @@ class CosyVoiceCrossLingualNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, prompt_wav, speed, seed, use_25hz, text_frontend):
+    def generate(self, tts_text, prompt_wav, speed, seed, use_25hz, text_frontend,auto_download):
         t0 = ttime()
-        _, model_dir = download_cosyvoice_300m(use_25hz)
+        _, model_dir = download_cosyvoice_300m(use_25hz,auto_download)
         cosyvoice = CosyVoice1(model_dir)
         speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
         prompt_speech_16k = fAudioTool.postprocess(speech)
@@ -351,6 +369,9 @@ class CosyVoiceInstructNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "tts_text":("STRING", {
                     "default": "",
                     "multiline": True
@@ -378,9 +399,9 @@ class CosyVoiceInstructNode:
     RETURN_TYPES = ("AUDIO",)
     FUNCTION="generate"
 
-    def generate(self, tts_text, speaker_name, instruct_text, speed, seed, text_frontend):
+    def generate(self, tts_text, speaker_name, instruct_text, speed, seed, text_frontend,auto_download):
         t0 = ttime()
-        _, model_dir = download_cosyvoice_300m_instruct()
+        _, model_dir = download_cosyvoice_300m_instruct(auto_download)
         cosyvoice = CosyVoice1(model_dir)
         set_all_random_seed(seed)
         output = cosyvoice.inference_instruct(tts_text, speaker_name, instruct_text, False, speed, text_frontend)

@@ -34,3 +34,7 @@ funasr>=1.1.3
 huggingface
 huggingface_hub
 pyworld
+https://huggingface.co/lldacing/flash-attention-windows-wheel/tree/main
+https://github.com/bdashore3/flash-attention/releases
+accelerate
+julius

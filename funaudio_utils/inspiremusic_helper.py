@@ -5,8 +5,8 @@ class InspireMusicHelper():
         model = InspireMusicUnified(
             model_name = model_name, 
             model_dir = model_dir,
-            min_generate_audio_seconds = 10,
-            max_generate_audio_seconds = 30.0,
+            min_generate_audio_seconds = 1.0,
+            max_generate_audio_seconds = duration,
             sample_rate = 24000,
             output_sample_rate = 48000,
             load_jit = True,

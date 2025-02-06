@@ -33,6 +33,9 @@ class SenseVoiceNode:
     def INPUT_TYPES(s):
         return {
             "required":{
+                "auto_download":("BOOLEAN",{
+                    "default": False
+                }),
                 "audio":("AUDIO",),
                 "use_fast_mode":("BOOLEAN",{
                     "default": False
@@ -48,7 +51,7 @@ class SenseVoiceNode:
 
     FUNCTION="generate"
 
-    def generate(self,audio, use_fast_mode,punc_segment):
+    def generate(self,audio, use_fast_mode,punc_segment,auto_download):
         sensevoice_code_path = os.path.join(folder_paths.base_path,"custom_nodes/ComfyUI-FunAudioLLM/sensevoice/model.py")
         speech = audio["waveform"]
         source_sr = audio["sample_rate"]
@@ -57,7 +60,7 @@ class SenseVoiceNode:
         # 判断语音长度是否大于30s
         if speech.shape[1] > 30 * 22050 and use_fast_mode:
             raise ValueError("Audio length is too long, please set use_fast_mode to False.")
-        _, model_dir = download_sensevoice_small()
+        _, model_dir = download_sensevoice_small(auto_download)
         model_arg = {
                 "input":speech[0],
                 "cache":{},

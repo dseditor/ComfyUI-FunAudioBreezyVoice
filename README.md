@@ -1,5 +1,7 @@
-# 已支持CosyVoice2
+# 已支持CosyVoice2,InspireMusic
 ## 新增内容：
+ - 初步支持了inspiremusic，还没有经过严格测试。相应的新增了依赖，同时需要安装flash-attention（requirements.txt中提供了Windows的whl下载地址）。
+ - 新增了是否自动下载模型的选项
  - 新增了多音字替换功能，配置在`funaudio_utils/多音字纠正配置.txt`。感谢https://github.com/touge/ComfyUI-NCE_CosyVoice/tree/main
  - 新增了3个CosyVoice2节点。
  - 整理了节点组。
@@ -7,7 +9,6 @@
  - 补充了更新CosyVoice后新增的参数`text_frontend`，作用应该是规范化文本，默认为`True`。
  - 优化了Speaker模型的保存与加载。
  - 因为CosyVoice2需要，采样率22050几乎全部改为了24000。
- - 加入了inspiremusic，有时间的话考虑支持。
 ## 使用说明：
  - 工作流详见示例workflow
  - 建议自动下载模型，不熟悉的话容易重复下载。想自己下载的请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)。
