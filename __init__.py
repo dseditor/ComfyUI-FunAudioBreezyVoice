@@ -64,6 +64,11 @@ NODE_CONFIG = {
     "MusicContinuation": {
         "class": MusicContinuation,
         "name": "音乐延续"
+    },
+
+    "AudioPath": {
+        "class": AudioPath,
+        "name": "音乐路径"
     }
 }
 

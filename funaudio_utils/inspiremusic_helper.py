@@ -1,7 +1,7 @@
 from inspiremusic.cli.inference import InspireMusicUnified, set_env_variables
 
 class InspireMusicHelper():
-    def music_create(self,task,duration,text,audio,model_name, model_dir,fast=True):
+    def music_create(self,task,duration,text,audio_prompt,model_name, model_dir,fast):
         model = InspireMusicUnified(
             model_name = model_name, 
             model_dir = model_dir,
@@ -18,7 +18,7 @@ class InspireMusicHelper():
         return model.inference(
             task=task,
             text=text,
-            audio_prompt= None, # audio prompt file path
+            audio_prompt= audio_prompt, # audio prompt file path
             chorus = "verse",
             time_start = 0.0,
             time_end = duration,
