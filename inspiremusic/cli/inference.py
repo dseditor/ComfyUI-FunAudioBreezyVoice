@@ -23,7 +23,7 @@ from modelscope import snapshot_download
 from inspiremusic.cli.inspiremusic import InspireMusic
 from inspiremusic.utils.file_utils import logging
 import torch
-from inspiremusic.utils.audio_utils import trim_audio, fade_out
+from inspiremusic.utils.audio_utils import trim_audio, fade_out,process_audio
 from transformers import AutoModel
 
 def set_env_variables():
@@ -80,7 +80,8 @@ class InspireMusicUnified:
     def inference(self,
                   task: str = 'text-to-music',
                   text: str = None,
-                  audio_prompt: str = None, # audio prompt file path
+                  audio_prompt: torch.Tensor = None, # audio prompt file path
+                  sample_rate: int =24000,
                   chorus: str = "verse",
                   time_start: float = 0.0,
                   time_end: float = 30.0,
@@ -109,6 +110,7 @@ class InspireMusicUnified:
                 model_input = {
                     "text"           : text,
                     "audio_prompt"   : audio_prompt,
+                    "sample_rate"    : sample_rate,
                     "time_start"     : time_start_tensor,
                     "time_end"       : time_end_tensor,
                     "chorus"         : chorus,
@@ -119,7 +121,7 @@ class InspireMusicUnified:
                 }
             elif task == 'continuation':
                 if audio_prompt is not None:
-                    audio, _ = process_audio(audio_prompt, self.sample_rate)
+                    audio, _ = process_audio(audio_prompt,sample_rate ,self.sample_rate)
                     if audio.size(1) < self.sample_rate:
                         logging.warning("Warning: Input prompt audio length is shorter than 1s. Please provide an appropriate length audio prompt and try again.")
                         audio = None
@@ -130,6 +132,7 @@ class InspireMusicUnified:
                 model_input = {
                     "text"           : text,
                     "audio_prompt"   : audio,
+                    "sample_rate"    : sample_rate,
                     "time_start"     : time_start_tensor,
                     "time_end"       : time_end_tensor,
                     "chorus"         : chorus,

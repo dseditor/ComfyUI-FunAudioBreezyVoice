@@ -47,8 +47,8 @@ _BoolLike_co = Union[bool, np.bool_]
 _IntLike_co = Union[_BoolLike_co, int, "np.integer[Any]"]
 _FloatLike_co = Union[_IntLike_co, float, "np.floating[Any]"]
 
-def process_audio(file_path, target_sample_rate=24000):
-    audio, sample_rate = torchaudio.load(file_path)
+def process_audio(audio,sample_rate, target_sample_rate=24000):
+    # audio, sample_rate = torchaudio.load(file_path)
     # Check if the audio needs to be resampled
     if sample_rate != target_sample_rate:
         audio = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=target_sample_rate)(audio)

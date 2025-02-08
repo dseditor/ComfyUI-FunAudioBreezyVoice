@@ -90,7 +90,7 @@ class InspireMusic:
             print("Currently only support text-to-music and music continuation tasks.")
 
     @torch.inference_mode()
-    def cli_inference(self, text, audio_prompt, time_start, time_end, chorus, task, stream=False, duration_to_gen=30, sr=24000):
+    def cli_inference(self, text, audio_prompt,sample_rate, time_start, time_end, chorus, task, stream=False, duration_to_gen=30, sr=24000):
         if task == "text-to-music":
             model_input = self.frontend.frontend_text_to_music(text, time_start, time_end, chorus)
             logging.info('prompt text {}'.format(text))

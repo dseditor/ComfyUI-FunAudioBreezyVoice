@@ -65,11 +65,6 @@ NODE_CONFIG = {
         "class": MusicContinuation,
         "name": "音乐延续"
     },
-
-    "AudioPath": {
-        "class": AudioPath,
-        "name": "音乐路径"
-    }
 }
 
 def generate_node_mappings(node_config):
