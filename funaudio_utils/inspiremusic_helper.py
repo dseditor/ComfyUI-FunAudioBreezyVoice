@@ -27,7 +27,7 @@ class InspireMusicHelper():
             audio_prompt= audio_prompt,  # 输入音频
             sample_rate = input_sample_rate, # 输入音频的采样率
             instruct = None, # 指令
-            chorus = chorus, # 副歌标签生成模式，如：随机random、主歌verse、副歌chorus、前奏intro、后奏outro
+            chorus = chorus, # 副歌标签生成模式，如：随机random、主歌verse、副歌chorus、前奏intro、结尾outro
             time_start = 0.0, # 音频开始时间
             time_end = duration, # 音频长度
             output_fn = "output_audio", # 输出文件名
