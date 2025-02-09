@@ -68,15 +68,15 @@ def download_inspiremusic_base_24k(auto_download = False):
     model_dir = os.path.join(base_InspireMusic_model_path, model_name)
     if auto_download:
         snapshot_download(model_id=model_id, local_dir=model_dir)
-    replace_text_in_yaml_files(model_dir,base_InspireMusic_model_path,"InspireMusic-Base-24kHz")
+    replace_text_in_yaml_files(model_dir,base_InspireMusic_model_path)
     return model_name, model_dir
 def download_inspiremusic_base_48k(auto_download = False):
-    model_name = "InspireMusic"
+    model_name = "InspireMusic-Base"
     model_id = "iic/InspireMusic"
     model_dir = os.path.join(base_InspireMusic_model_path, model_name)
     if auto_download:
         snapshot_download(model_id=model_id, local_dir=model_dir,)
-    replace_text_in_yaml_files(model_dir,base_InspireMusic_model_path,"InspireMusic")
+    replace_text_in_yaml_files(model_dir,base_InspireMusic_model_path)
     return model_name, model_dir
 def download_inspiremusic_1dot5B_24k(auto_download = False):
     model_name = "InspireMusic-1.5B-24kHz"
@@ -108,7 +108,7 @@ def get_speaker_default_path():
 
 import os
 
-def replace_text_in_yaml_files(folder_path,replace_text,debug = None):
+def replace_text_in_yaml_files(folder_path,replace_text):
     # 遍历指定文件夹中的所有文件和文件夹
     for root, dirs, files in os.walk(folder_path):
         for file in files:
@@ -123,10 +123,6 @@ def replace_text_in_yaml_files(folder_path,replace_text,debug = None):
                         # 替换指定文本
                         replace_text = replace_text.replace('\\', '/')
                         new_content = content.replace('../../pretrained_models', replace_text)
-                        if debug == "InspireMusic-Base-24kHz":
-                            new_content = new_content.replace('InspireMusic-Base', 'InspireMusic-Base-24kHz')
-                        elif debug == "InspireMusic":
-                            new_content = new_content.replace('InspireMusic/InspireMusic-Base', 'InspireMusic/InspireMusic')
                         # 将替换后的内容写回文件
                         with open(file_path, 'w', encoding='utf-8') as f:
                             f.write(new_content)
