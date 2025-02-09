@@ -14,12 +14,14 @@ class InspireMusicHelper():
             fast = fast,
             fp16 = True,
             gpu = 0,
-            result_dir = '',)
+            result_dir = '',
+            hub = "modelscope")
         return model.inference(
             task=task,
             text=text,
             audio_prompt= audio_prompt, 
             sample_rate = 24000,
+            instruct = None,
             chorus = "verse",
             time_start = 0.0,
             time_end = duration,

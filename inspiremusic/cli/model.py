@@ -11,13 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import torch
 import numpy as np
 import threading
 import time
 from contextlib import nullcontext
 import uuid
-from inspiremusic.utils.common import fade_in_out
 from inspiremusic.music_tokenizer.vqvae import VQVAE
 from inspiremusic.wavtokenizer.decoder.pretrained import WavTokenizer
 from torch.cuda.amp import autocast

@@ -15,18 +15,26 @@ import os
 import time
 from tqdm import tqdm
 from hyperpyyaml import load_hyperpyyaml
-from modelscope import snapshot_download
 from inspiremusic.cli.frontend import InspireMusicFrontEnd
 from inspiremusic.cli.model import InspireMusicModel
 from inspiremusic.utils.file_utils import logging
 import torch
 
 class InspireMusic:
-    def __init__(self, model_dir, load_jit=True, load_onnx=False, fast = False, fp16=True):
+    def __init__(self, model_dir, load_jit=True, load_onnx=False, fast = False, fp16=True, hub="modelscope"):
         instruct = True if '-Instruct' in model_dir else False
-        self.model_dir = model_dir
-        if not os.path.exists(model_dir):
-            model_dir = snapshot_download(model_dir)
+
+        if model_dir is None:
+             model_dir = f"../../pretrained_models/InspireMusic-1.5B-Long"
+        if not os.path.isfile(f"{model_dir}/llm.pt"):
+            model_name = model_dir.split("/")[-1]
+            if hub == "modelscope":
+                from modelscope import snapshot_download
+                if model_name == "InspireMusic-Base":
+                    snapshot_download(f"iic/InspireMusic", local_dir=model_dir)
+                else:
+                    snapshot_download(f"iic/InspireMusic", local_dir=model_dir)
+
         with open('{}/inspiremusic.yaml'.format(model_dir), 'r') as f:
             configs = load_hyperpyyaml(f)
 
