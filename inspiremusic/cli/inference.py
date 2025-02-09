@@ -68,7 +68,7 @@ class InspireMusicUnified:
         self.sample_rate = sample_rate
         self.output_sample_rate = 24000 if fast else output_sample_rate
         self.result_dir = result_dir or f"exp/{model_name}"
-        os.makedirs(self.result_dir, exist_ok=True)
+        # os.makedirs(self.result_dir, exist_ok=True)
 
         self.min_generate_audio_seconds = min_generate_audio_seconds
         self.max_generate_audio_seconds = max_generate_audio_seconds

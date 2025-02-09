@@ -15,7 +15,7 @@ class InspireMusicHelper():
             fp16 = True,
             gpu = 0,
             result_dir = '',
-            hub = "modelscope")
+            hub = "modelscope",)
         return model.inference(
             task=task,
             text=text,
