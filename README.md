@@ -1,6 +1,10 @@
 # 已支持CosyVoice2,InspireMusic
 ## 新增内容：
- - 初步支持了inspiremusic，还没有经过严格测试。相应的新增了依赖，同时需要安装flash-attention（requirements.txt中提供了Windows的whl下载地址）。
+ - 初步支持了inspiremusic，还没有经过严格测试。相应的新增了依赖，同时需要安装flash-attention，windows系统的whl可以从这里下载：
+ ```
+https://huggingface.co/lldacing/flash-attention-windows-wheel/tree/main
+https://github.com/bdashore3/flash-attention/releases
+ ```
  - 新增了是否自动下载模型的选项
  - 新增了多音字替换功能，配置在`funaudio_utils/多音字纠正配置.txt`。感谢https://github.com/touge/ComfyUI-NCE_CosyVoice/tree/main
  - 新增了3个CosyVoice2节点。
