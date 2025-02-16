@@ -9,7 +9,7 @@ https://github.com/bdashore3/flash-attention/releases
  - 新增了多音字替换功能，配置在`funaudio_utils/多音字纠正配置.txt`。感谢https://github.com/touge/ComfyUI-NCE_CosyVoice/tree/main
  - 新增了3个CosyVoice2节点。
  - 整理了节点组。
- - 从官方更新了CosyVoice、SenseVoice、match，更新时间`2025-1-18`
+ - 从官方更新了CosyVoice、SenseVoice、match。
  - 补充了更新CosyVoice后新增的参数`text_frontend`，作用应该是规范化文本，默认为`True`。
  - 优化了Speaker模型的保存与加载。
  - 因为CosyVoice2需要，采样率22050几乎全部改为了24000。
@@ -19,13 +19,28 @@ https://github.com/bdashore3/flash-attention/releases
  - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
- - Windows系统需要使用conda，请自行学习conda使用。
+ - Windows系统需要使用conda虚拟环境，请自行学习conda使用。
+ - ComfyUI同级目录（与官方批处理同文件夹）创建批处理文件，内容如下：
+ ```
+ @echo off
+
+:: 切换到 ComfyUI 目录
+cd ComfyUI
+
+:: 激活你的 Conda 虚拟环境
+call conda activate your-env
+
+:: 运行 Python 脚本
+python -s main.py --windows-standalone-build --fast
+
+pause
+ ```
  - 试验下来python3.12也能用，推荐使用python3.10，torch<=2.4.1
  - 原项目推荐的pynini2.1.6会有问题（可能需要更高的python版本，比如3.12），需使用官方推荐的2.1.5：
  ```bash
  conda install -y -c conda-forge pynini==2.1.5 
- pip install WeTextProcessing --no-deps
- pip install -r requirements.txt
+ python -m pip install WeTextProcessing --no-deps
+ python -m pip install -r requirements.txt
  ```
  - 如果报错缺模块就自行安装。
  - 安装[ffmpeg](https://ffmpeg.org/)，并将ffmpeg.exe所在文件夹添加到环境变量。
