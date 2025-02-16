@@ -15,7 +15,8 @@ https://github.com/bdashore3/flash-attention/releases
  - 因为CosyVoice2需要，采样率22050几乎全部改为了24000。
 ## 使用说明：
  - 工作流详见示例workflow
- - 建议自动下载模型，不熟悉的话容易重复下载。手动下载请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)。
+ - 建议自动下载模型，不熟悉的话容易重复下载。
+ - 手动下载请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)。手动下载后需要将inspiremusic.yaml文件里的'../../pretrained_models'替换成自己的模型路径。
  - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
