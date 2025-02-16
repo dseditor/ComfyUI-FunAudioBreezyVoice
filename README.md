@@ -19,8 +19,19 @@ https://github.com/bdashore3/flash-attention/releases
  - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
- - Windows系统需要使用conda虚拟环境，请自行学习conda使用。
- - ComfyUI同级目录（与官方批处理同文件夹）创建批处理文件，内容如下：
+ - Windows系统需要使用conda虚拟环境。
+ - 试验下来python3.12也能用，推荐使用python3.10，torch<=2.4.1
+ - 原项目推荐的pynini2.1.6会有问题（可能需要更高的python版本，比如3.12），需使用官方推荐的2.1.5：
+ ```bash
+ conda install -y -c conda-forge pynini==2.1.5 
+ python -m pip install WeTextProcessing --no-deps
+ python -m pip install -r requirements.txt
+ ```
+ - 如果报错缺模块就自行安装。
+ - 安装[ffmpeg](https://ffmpeg.org/)，并将ffmpeg.exe所在文件夹添加到环境变量。
+
+ ## conda虚拟环境使用方式
+ 在ComfyUI同级目录（与官方批处理同文件夹）创建批处理文件，内容如下：
  ```
  @echo off
 
@@ -35,15 +46,8 @@ python -s main.py --windows-standalone-build --fast
 
 pause
  ```
- - 试验下来python3.12也能用，推荐使用python3.10，torch<=2.4.1
- - 原项目推荐的pynini2.1.6会有问题（可能需要更高的python版本，比如3.12），需使用官方推荐的2.1.5：
- ```bash
- conda install -y -c conda-forge pynini==2.1.5 
- python -m pip install WeTextProcessing --no-deps
- python -m pip install -r requirements.txt
- ```
- - 如果报错缺模块就自行安装。
- - 安装[ffmpeg](https://ffmpeg.org/)，并将ffmpeg.exe所在文件夹添加到环境变量。
+或者直接覆盖官方批处理的内容。更多conda使用请自行学习。
+
  ---
 # 以下是原项目说明：
 ## ComfyUI-FunAudioLLM
