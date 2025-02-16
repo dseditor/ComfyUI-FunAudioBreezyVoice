@@ -1,6 +1,6 @@
 # 已支持[CosyVoice2](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)
 ## 新增内容：
- - 初步支持了inspiremusic，还没有经过严格测试（InspireMusic-Base推理时有问题可以选其他模型）。相应的新增了依赖，同时需要安装flash-attention，windows系统的whl可以从这里下载：
+ - 初步支持了inspiremusic，还没有经过严格测试（InspireMusic-Base推理时有问题可以选其他模型）。相应的新增了依赖，同时需要安装flash-attention（不使用InspireMusic可以不装），windows系统的whl可以从这里下载：
  ```
 https://huggingface.co/lldacing/flash-attention-windows-wheel/tree/main
 https://github.com/bdashore3/flash-attention/releases
