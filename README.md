@@ -1,4 +1,4 @@
-# 已支持CosyVoice2,InspireMusic
+# 已支持[CosyVoice2](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)
 ## 新增内容：
  - 初步支持了inspiremusic，还没有经过严格测试（InspireMusic-Base推理时有问题可以选其他模型）。相应的新增了依赖，同时需要安装flash-attention，windows系统的whl可以从这里下载：
  ```
@@ -15,7 +15,7 @@ https://github.com/bdashore3/flash-attention/releases
  - 因为CosyVoice2需要，采样率22050几乎全部改为了24000。
 ## 使用说明：
  - 工作流详见示例workflow
- - 建议自动下载模型，不熟悉的话容易重复下载。想自己下载的请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)。
+ - 建议自动下载模型，不熟悉的话容易重复下载。想自己下载的请参考官方[CosyVoice](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)。
  - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
@@ -28,6 +28,7 @@ https://github.com/bdashore3/flash-attention/releases
  pip install -r requirements.txt
  ```
  - 如果报错缺模块就自行安装。
+ - 安装[ffmpeg](https://ffmpeg.org/)，并将ffmpeg.exe所在文件夹添加到环境变量。
  ---
 # 以下是原项目说明：
 ## ComfyUI-FunAudioLLM
