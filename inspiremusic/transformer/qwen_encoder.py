@@ -93,7 +93,7 @@ class QwenEmbeddingEncoder(nn.Module):
         super(QwenEmbeddingEncoder, self).__init__()
         self.input_size = input_size
         from transformers import Qwen2ForCausalLM
-        self.model = Qwen2ForCausalLM.from_pretrained(pretrain_path, device_map="cpu", attn_implementation="flash_attention_2")
+        self.model = Qwen2ForCausalLM.from_pretrained(pretrain_path, torch_dtype=torch.float16, device_map="cpu", attn_implementation="flash_attention_2")
         self._output_size = self.model.config.hidden_size
 
     def output_size(self) -> int:
@@ -140,7 +140,7 @@ class QwenInputOnlyEncoder(nn.Module):
         super(QwenInputOnlyEncoder, self).__init__()
         self.input_size = input_size
         from transformers import Qwen2ForCausalLM
-        model = Qwen2ForCausalLM.from_pretrained(pretrain_path, device_map="cpu", attn_implementation="flash_attention_2")
+        model = Qwen2ForCausalLM.from_pretrained(pretrain_path, torch_dtype=torch.float16, device_map="cpu", attn_implementation="flash_attention_2")
         self.embed = model.model.embed_tokens
         for p in self.embed.parameters():
             p.requires_grad = False
