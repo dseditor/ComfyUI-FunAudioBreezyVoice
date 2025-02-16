@@ -20,12 +20,14 @@ https://github.com/bdashore3/flash-attention/releases
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
  - Windows系统需要使用conda，请自行学习conda使用。
- - 使用python3.10，torch<=2.4.1
- - 原项目推荐的pynini2.1.6会有问题，需使用官方推荐的2.1.5：
+ - 试验下来python3.12也能用，推荐使用python3.10，torch<=2.4.1
+ - 原项目推荐的pynini2.1.6会有问题（可能需要更高的python版本，比如3.12），需使用官方推荐的2.1.5：
  ```bash
  conda install -y -c conda-forge pynini==2.1.5 
+ pip install WeTextProcessing --no-deps
  pip install -r requirements.txt
  ```
+ - 如果报错缺模块就自行安装。
  ---
 # 以下是原项目说明：
 ## ComfyUI-FunAudioLLM

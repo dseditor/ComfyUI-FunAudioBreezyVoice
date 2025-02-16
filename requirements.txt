@@ -29,10 +29,10 @@ pydub
 audiosegment
 srt
 ffmpeg-python
-WeTextProcessing
 funasr>=1.1.3
 huggingface
 huggingface_hub
 pyworld
 accelerate
 julius
+importlib_resources
