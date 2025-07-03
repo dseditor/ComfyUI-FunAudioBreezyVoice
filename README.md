@@ -4,7 +4,8 @@
 ![Demo](assets/BreezeVoice.jpg)
 
 ## 使用說明：
- - 比起原始的BreezyVoice模型邏輯，預設採用FP16載入，VRAM僅占2-3GB  
+ - 比起原始的BreezyVoice模型邏輯，預設採用FP16載入，VRAM僅占2-3GB
+ - 會從HuggingFace自動下載、配置設定及模型，節點開箱即用，但Requirement須確實依說明安裝完成，如果你已經安裝過![IndexTTS](https://github.com/billwuhao/ComfyUI_IndexTTS) 只需要補上缺的需求項，其他全部都有了
  - 配合ListHelper節點組，每100字手動分段文字，合併聲音檔案，可採樣超過官方範例的語音長度，原長度僅支援15秒鐘，參考範例工作流設計  
  - 基礎設計邏輯請參考上面BreezyVoice的Github，需要有一個音聲檔案以及對應的字幕文本，音聲檔案可以任意節點載入，建議不要載入大於五秒鐘，會導致效能降低
  - 增加語速設定，語速設定為0.8，可改善原有模型音檔過快狀況
