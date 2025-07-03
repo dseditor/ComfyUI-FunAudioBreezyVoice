@@ -1,4 +1,5 @@
-# 已支持[CosyVoice2](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)
+# 已支持[CosyVoice2](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)  
+# 以原節點為基礎，添加支援聯發科的BreezyVoice [BreezyVoice](https://github.com/mtkresearch/BreezyVoice)  
 ## 新增内容：
  - 初步支持了inspiremusic，还没有经过严格测试（推理时有问题可以尝试换模型）。相应的新增了依赖，同时需要安装flash-attention（不使用InspireMusic可以不装），windows系统的whl可以从这里下载：
  ```
@@ -20,36 +21,10 @@ https://github.com/bdashore3/flash-attention/releases
  - Speaker模型默认存储在 `/models/CosyVoice/Speaker`
  - 当以Speaker模型做为输入时，保存模型依然生效，但是保存的模型应该没有数据。
 ## 安装注意事项：
- - Windows系统需要使用conda虚拟环境。
- - 试验下来python3.12也能用，推荐使用python3.10，torch<=2.4.1
- - 原项目推荐的pynini2.1.6会有问题（可能需要更高的python版本，比如3.12），需使用官方推荐的2.1.5：
- ```bash
- conda install -y -c conda-forge pynini==2.1.5 
- python -m pip install WeTextProcessing --no-deps
- python -m pip install -r requirements.txt
- ```
- - 如果报错缺模块就自行安装。
+ 
  - 安装[ffmpeg](https://ffmpeg.org/)，并将ffmpeg.exe所在文件夹添加到环境变量。
+ 不需要使用Conda，從此下載WHL安裝pynini  [Pynini](https://github.com/billwuhao/pynini-windows-wheels/releases/tag/v2.1.6.post1)  
 
- ## conda虚拟环境使用方式
- 在ComfyUI同级目录（与官方批处理同文件夹）创建批处理文件，内容如下：
- ```
- @echo off
-
-:: 切换到 ComfyUI 目录
-cd ComfyUI
-
-:: 激活你的 Conda 虚拟环境
-call conda activate your-env
-
-:: 运行 Python 脚本
-python -s main.py --windows-standalone-build --fast
-
-pause
- ```
-或者直接覆盖官方批处理的内容。更多conda使用请自行学习。
-
- ---
 # 以下是原项目说明：
 ## ComfyUI-FunAudioLLM
 Comfyui custom node for [FunAudioLLM](https://funaudiollm.github.io/) include [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) and [SenseVoice](https://github.com/FunAudioLLM/SenseVoice)
