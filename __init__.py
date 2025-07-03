@@ -9,6 +9,7 @@ Description: file content
 from .nodes.cosyvoice_nodes import *
 from .nodes.sensevoice_nodes import *
 from .nodes.inspiremusic_nodes import *
+from .nodes.breezyvoice_nodes import *
 
 NODE_CONFIG = {
     "CosyVoice2ZeroShotNode": {
@@ -51,6 +52,14 @@ NODE_CONFIG = {
         "class": CosyVoiceLoadSpeakerModelFromUrlNode,
         "name": "CosyVoice 从URL加载说话人模型"
     },
+    "BreezyVoiceNode": {
+        "class": BreezyVoiceNode,
+        "name": "BreezyVoice 音色克隆"
+    },
+    "BreezyVoiceCrossLingualNode": {
+        "class": BreezyVoiceCrossLingualNode,
+        "name": "BreezyVoice 跨语言克隆"
+    },
     "SenseVoiceNode": {
         "class": SenseVoiceNode,
         "name": "SenseVoice 语音识别"
@@ -82,5 +91,3 @@ NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS = generate_node_mappings(NODE_CO
 WEB_DIRECTORY = "./web"
 
 __all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS", "WEB_DIRECTORY"]
-
-
