@@ -1,5 +1,8 @@
 # 已支持[CosyVoice2](https://github.com/FunAudioLLM/CosyVoice)、[SenseVoice](https://github.com/FunAudioLLM/SenseVoice)、[InspireMusic](https://github.com/FunAudioLLM/InspireMusic)  
 # 以原節點為基礎，添加支援聯發科的BreezyVoice [BreezyVoice](https://github.com/mtkresearch/BreezyVoice)  
+
+![Demo](assets/BreezeVoice.jpg)
+
 ## 新增内容：
  - 初步支持了inspiremusic，还没有经过严格测试（推理时有问题可以尝试换模型）。相应的新增了依赖，同时需要安装flash-attention（不使用InspireMusic可以不装），windows系统的whl可以从这里下载：
  ```
