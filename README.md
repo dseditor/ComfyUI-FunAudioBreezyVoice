@@ -3,7 +3,13 @@
 
 ![Demo](assets/BreezeVoice.jpg)
 
-## 新增内容：
+## 使用說明：
+ - 比起原始的BreezyVoice模型邏輯，預設採用FP16載入，VRAM僅占2-3GB  
+ - 配合ListHelper節點組，每100字手動分段文字，合併聲音檔案，可採樣超過官方範例的語音長度，原長度僅支援15秒鐘，參考範例工作流設計  
+ - 基礎設計邏輯請參考上面BreezyVoice的Github，需要有一個音聲檔案以及對應的字幕文本，音聲檔案可以任意節點載入，建議不要載入大於五秒鐘，會導致效能降低
+ - 增加語速設定，語速設定為0.8，可改善原有模型音檔過快狀況 
+
+## (原節點說明)新增内容：
  - 初步支持了inspiremusic，还没有经过严格测试（推理时有问题可以尝试换模型）。相应的新增了依赖，同时需要安装flash-attention（不使用InspireMusic可以不装），windows系统的whl可以从这里下载：
  ```
 https://huggingface.co/lldacing/flash-attention-windows-wheel/tree/main
