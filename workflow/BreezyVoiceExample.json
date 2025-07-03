@@ -1,0 +1,383 @@
+{
+  "id": "21f0f391-994e-4685-a703-0a91fac802af",
+  "revision": 0,
+  "last_node_id": 44,
+  "last_link_id": 77,
+  "nodes": [
+    {
+      "id": 38,
+      "type": "LoadAudioMW",
+      "pos": [
+        -1270,
+        -640
+      ],
+      "size": [
+        270,
+        150
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            70,
+            74
+          ]
+        },
+        {
+          "name": "frame_count",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "audiotools",
+        "ver": "b05ed6dbc2a2eb19a757d6a6d21b53ebf1558b18",
+        "Node name for S&R": "LoadAudioMW",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "normalsoft.flac",
+        0,
+        5,
+        24
+      ]
+    },
+    {
+      "id": 39,
+      "type": "PromptListGenerator",
+      "pos": [
+        -1670,
+        -650
+      ],
+      "size": [
+        380,
+        480
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "text_list",
+          "shape": 6,
+          "type": "STRING",
+          "links": [
+            71
+          ]
+        },
+        {
+          "name": "total_index",
+          "type": "INT",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "Listhelper",
+        "ver": "263f992d046b8f76b932dd3355d4af0855db8614",
+        "Node name for S&R": "PromptListGenerator",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "這是個聯發科的聲音產生範例檔案，大概是今年二月的時候，聯發科發布了這個TTS的模型，新聞上提出它有比較好的台灣發音支援，也是國內少數開源的本土TTS，然而實際上測試起來如何呢。\n第一是它的速度不快，生成的時間比較長，所以實用性上沒有很好，第二是他的講話語速很奇特，但並沒有像之前有篇測試文章那樣提到，有初始的聲音採樣不夠的問題。\n不過個人認為這還是個很初代的模型，除了企業的發音非常正確之外，有些其他的細節、口音還是比較不自然，沒有像新一代的模型那樣，自然而且快速，我想我還是會用比較新的TTS，做為設定這些虛擬人物的基礎。\n無論如何我還是打磨了它一下，就把節點和修改過的檔案，放出來給大家參考測試，做為本土TTS參考。",
+        "",
+        false,
+        false,
+        0,
+        0,
+        10,
+        false,
+        false,
+        126726020,
+        "randomize"
+      ]
+    },
+    {
+      "id": 41,
+      "type": "GeminiAPI",
+      "pos": [
+        -1260,
+        -440
+      ],
+      "size": [
+        230,
+        350
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "video",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "name": "audio",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 74
+        }
+      ],
+      "outputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "links": [
+            75
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-ollamagemini",
+        "ver": "537fb15c905539d9561c2fb5928748c85f3f073e",
+        "Node name for S&R": "GeminiAPI",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "請協助識別內容為繁體中文文字檔案，僅輸出文字，不帶任何說明",
+        "audio",
+        "gemini-2.5-flash-preview-05-20",
+        false,
+        false,
+        "Custom",
+        "Return only the prompt text itself. No explanations or formatting.",
+        "raw_text",
+        ""
+      ]
+    },
+    {
+      "id": 36,
+      "type": "BreezyVoiceNode",
+      "pos": [
+        -980,
+        -600
+      ],
+      "size": [
+        350,
+        390
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "prompt_wav",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": 70
+        },
+        {
+          "name": "speaker_model",
+          "shape": 7,
+          "type": "SPK_MODEL",
+          "link": null
+        },
+        {
+          "name": "tts_text",
+          "type": "STRING",
+          "widget": {
+            "name": "tts_text"
+          },
+          "link": 71
+        },
+        {
+          "name": "prompt_text",
+          "shape": 7,
+          "type": "STRING",
+          "widget": {
+            "name": "prompt_text"
+          },
+          "link": 75
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            72
+          ]
+        },
+        {
+          "name": "speaker_model",
+          "type": "SPK_MODEL",
+          "links": null
+        }
+      ],
+      "properties": {
+        "aux_id": "zhilengjun/ComfyUI-FunAudioLLM_V2",
+        "ver": "a380491c65efe12f5c0a52ece8f9f6f10e25fd64",
+        "Node name for S&R": "BreezyVoiceNode",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "",
+        0.8,
+        603675278,
+        "randomize",
+        true,
+        false,
+        "balanced",
+        true,
+        ""
+      ]
+    },
+    {
+      "id": 40,
+      "type": "AudioListCombine",
+      "pos": [
+        -590,
+        -600
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio_list",
+          "type": "AUDIO",
+          "link": 72
+        }
+      ],
+      "outputs": [
+        {
+          "name": "AUDIO",
+          "type": "AUDIO",
+          "links": [
+            73
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "Listhelper",
+        "ver": "263f992d046b8f76b932dd3355d4af0855db8614",
+        "Node name for S&R": "AudioListCombine",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "concatenate",
+        0,
+        true,
+        44100
+      ]
+    },
+    {
+      "id": 19,
+      "type": "SaveAudio",
+      "pos": [
+        -590,
+        -380
+      ],
+      "size": [
+        340,
+        120
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 73
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.43",
+        "Node name for S&R": "SaveAudio",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "audio/ComfyUI"
+      ]
+    }
+  ],
+  "links": [
+    [
+      70,
+      38,
+      0,
+      36,
+      0,
+      "AUDIO"
+    ],
+    [
+      71,
+      39,
+      0,
+      36,
+      2,
+      "STRING"
+    ],
+    [
+      72,
+      36,
+      0,
+      40,
+      0,
+      "AUDIO"
+    ],
+    [
+      73,
+      40,
+      0,
+      19,
+      0,
+      "AUDIO"
+    ],
+    [
+      74,
+      38,
+      0,
+      41,
+      2,
+      "AUDIO"
+    ],
+    [
+      75,
+      41,
+      0,
+      36,
+      3,
+      "STRING"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ue_links": [],
+    "ds": {
+      "scale": 1.0834705943389102,
+      "offset": [
+        1660.4755657179087,
+        789.8297651298193
+      ]
+    },
+    "links_added_by_ue": [],
+    "frontendVersion": "1.23.4",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
