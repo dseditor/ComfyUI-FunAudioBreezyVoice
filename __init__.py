@@ -54,11 +54,11 @@ NODE_CONFIG = {
     },
     "BreezyVoiceNode": {
         "class": BreezyVoiceNode,
-        "name": "BreezyVoice 音色克隆"
+        "name": "BreezyVoice 音色複製"
     },
     "BreezyVoiceCrossLingualNode": {
         "class": BreezyVoiceCrossLingualNode,
-        "name": "BreezyVoice 跨语言克隆"
+        "name": "BreezyVoice 跨語言音色複製"
     },
     "SenseVoiceNode": {
         "class": SenseVoiceNode,
