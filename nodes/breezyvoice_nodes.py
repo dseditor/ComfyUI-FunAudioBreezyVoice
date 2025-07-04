@@ -1,8 +1,8 @@
 '''
 Author: SpenserCai
-Date: 2025-07-03 19:13:28
+Date: 2024-10-04 12:13:28
 version: 
-LastEditors: Dseditor
+LastEditors: SpenserCai
 LastEditTime: 2024-10-05 12:23:01
 Description: BreezyVoice nodes for ComfyUI
 '''
@@ -127,6 +127,24 @@ class BreezyVoiceNode:
                 "enable_cache": ("BOOLEAN", {
                     "default": True,
                     "tooltip": "啟用模型快取加速後續推理"
+                }),
+                "enable_chunking": ("BOOLEAN", {
+                    "default": True,
+                    "tooltip": "啟用chunk處理以支援長文字（超過100字符自動分割）"
+                }),
+                "max_chars_per_chunk": ("INT", {
+                    "default": 100,
+                    "min": 50,
+                    "max": 200,
+                    "step": 10,
+                    "tooltip": "每個chunk的最大字符數，建議100字符以內"
+                }),
+                "crossfade_ms": ("INT", {
+                    "default": 30,
+                    "min": 0,
+                    "max": 100,
+                    "step": 5,
+                    "tooltip": "音訊chunk間的交叉淡化時間（毫秒）"
                 }),
             },
             "optional": {
@@ -259,6 +277,147 @@ class BreezyVoiceNode:
         print("[BreezyVoice] Skipping weight conversion, using autocast only")
         return model
 
+    def split_text_to_chunks(self, text, max_chars_per_chunk=100):
+        """
+        智慧分割文字為chunks，避免超過100字符限制
+        """
+        if len(text) <= max_chars_per_chunk:
+            return [text]
+        
+        chunks = []
+        # 優先按句號分割
+        sentences = text.split('。')
+        current_chunk = ""
+        
+        for i, sentence in enumerate(sentences):
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+            
+            # 重新加上句號（除了最後一句）
+            if i < len(sentences) - 1:
+                sentence += '。'
+            
+            # 檢查加入這句話後是否會超過限制
+            if len(current_chunk + sentence) <= max_chars_per_chunk:
+                current_chunk += sentence
+            else:
+                # 如果當前chunk不為空，先保存
+                if current_chunk:
+                    chunks.append(current_chunk.strip())
+                
+                # 如果單句話就超過限制，需要按字符強制分割
+                if len(sentence) > max_chars_per_chunk:
+                    # 強制按字符分割長句
+                    for j in range(0, len(sentence), max_chars_per_chunk):
+                        chunk_part = sentence[j:j + max_chars_per_chunk]
+                        chunks.append(chunk_part)
+                    current_chunk = ""
+                else:
+                    current_chunk = sentence
+        
+        # 添加最後一個chunk
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+        
+        return chunks
+
+    def concatenate_audio_chunks(self, audio_chunks, crossfade_ms=30):
+        """
+        平滑合併音訊chunks，使用較短的交叉淡化避免聲音變化
+        """
+        if len(audio_chunks) == 1:
+            return audio_chunks[0]
+        
+        sample_rate = 24000  # BreezyVoice使用24kHz
+        crossfade_samples = int(crossfade_ms * sample_rate / 1000)
+        
+        result = audio_chunks[0]
+        
+        for chunk in audio_chunks[1:]:
+            if result.shape[-1] > crossfade_samples and chunk.shape[-1] > crossfade_samples:
+                # 創建淡入淡出效果
+                fade_out = torch.linspace(1, 0, crossfade_samples, device=result.device)
+                fade_in = torch.linspace(0, 1, crossfade_samples, device=chunk.device)
+                
+                # 應用淡出到result的尾部
+                result_fade = result.clone()
+                result_fade[..., -crossfade_samples:] *= fade_out
+                
+                # 應用淡入到chunk的頭部
+                chunk_fade = chunk.clone()
+                chunk_fade[..., :crossfade_samples] *= fade_in
+                
+                # 重疊相加
+                overlap_part = result_fade[..., -crossfade_samples:] + chunk_fade[..., :crossfade_samples]
+                
+                # 合併：result前部 + 重疊部分 + chunk後部
+                result = torch.cat([
+                    result[..., :-crossfade_samples], 
+                    overlap_part, 
+                    chunk[..., crossfade_samples:]
+                ], dim=-1)
+            else:
+                # 如果太短無法crossfade，直接拼接
+                result = torch.cat([result, chunk], dim=-1)
+        
+        return result
+
+    def chunk_inference_with_reference(self, text_chunks, prompt_text, prompt_speech_16k, 
+                                     speed, text_frontend, use_mixed_precision):
+        """
+        使用重複參考法處理多個文字chunks
+        每個chunk都使用原始參考音訊，確保聲音一致性
+        """
+        all_outputs = []
+        total_chunks = len(text_chunks)
+        
+        print(f"[BreezyVoice] Starting chunked inference for {total_chunks} chunks")
+        
+        for i, chunk_text in enumerate(text_chunks):
+            print(f"[BreezyVoice] Processing chunk {i+1}/{total_chunks}: '{chunk_text[:50]}{'...' if len(chunk_text) > 50 else ''}'")
+            
+            # 每個chunk都使用相同的參考音訊和prompt文字
+            if use_mixed_precision and torch.cuda.is_available():
+                with torch.cuda.amp.autocast(enabled=True):
+                    output = self.cosyvoice.inference_zero_shot(
+                        chunk_text,
+                        prompt_text,  # 保持一致的prompt文字
+                        prompt_speech_16k,  # 每次都使用原始參考音訊
+                        False, 
+                        speed, 
+                        text_frontend
+                    )
+            else:
+                output = self.cosyvoice.inference_zero_shot(
+                    chunk_text,
+                    prompt_text,
+                    prompt_speech_16k,
+                    False,
+                    speed,
+                    text_frontend
+                )
+            
+            # 提取生成的音訊 - 處理generator返回值
+            if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                # 如果是generator，轉換為list
+                output = list(output)
+            
+            if isinstance(output, (list, tuple)):
+                chunk_audio = output[0]['tts_speech']
+            else:
+                chunk_audio = output['tts_speech']
+            
+            all_outputs.append(chunk_audio)
+            
+            # 立即清理GPU快取避免記憶體累積
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            
+            print(f"[BreezyVoice] Chunk {i+1} completed, audio shape: {chunk_audio.shape}")
+        
+        return all_outputs
+
     def preprocess_text(self, tts_text, polyreplace):
         """
         預處理文字
@@ -268,14 +427,9 @@ class BreezyVoiceNode:
             print("[BreezyVoice] Applying polyphonic word replacement...")
             tts_text = TextReplacer.replace_tts_text(tts_text)
         
-        # 分割長文字以提高處理效率
-        max_length = 200  # 最大字元數
-        if len(tts_text) > max_length:
-            print(f"[BreezyVoice] Text is long ({len(tts_text)} chars), consider splitting for better performance")
-        
         return tts_text
 
-    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, optimization_mode, enable_cache, prompt_text=None, prompt_wav=None, speaker_model=None):
+    def generate(self, tts_text, speed, seed, text_frontend, polyreplace, optimization_mode, enable_cache, enable_chunking, max_chars_per_chunk, crossfade_ms, prompt_text=None, prompt_wav=None, speaker_model=None):
         t0 = time.time()
         
         # 驗證輸入
@@ -287,6 +441,29 @@ class BreezyVoiceNode:
         
         # 預處理文字
         tts_text = self.preprocess_text(tts_text, polyreplace)
+        
+        # 檢查是否需要chunk處理
+        need_chunking = enable_chunking and len(tts_text) > max_chars_per_chunk
+        
+        if need_chunking:
+            print(f"[BreezyVoice] Text length ({len(tts_text)} chars) exceeds chunk limit ({max_chars_per_chunk}), enabling chunked processing")
+            return self.generate_chunked(tts_text, speed, seed, text_frontend, 
+                                       optimization_mode, enable_cache, max_chars_per_chunk,
+                                       crossfade_ms, prompt_text, prompt_wav, speaker_model)
+        else:
+            print(f"[BreezyVoice] Text length ({len(tts_text)} chars) within limit, using standard processing")
+            return self.generate_standard(tts_text, speed, seed, text_frontend,
+                                        optimization_mode, enable_cache, prompt_text, prompt_wav, speaker_model)
+
+    def generate_standard(self, tts_text, speed, seed, text_frontend, optimization_mode, enable_cache, prompt_text=None, prompt_wav=None, speaker_model=None):
+        """
+        標準單次推理模式（原有邏輯）
+        """
+        t0 = time.time()
+        
+        # 獲取最佳化設定
+        opt_settings = self.get_optimization_settings(optimization_mode)
+        print(f"[BreezyVoice] Using {optimization_mode} optimization mode")
         
         # 獲取模型目錄
         model_dir = self.download_breezy_voice_hf()
@@ -327,10 +504,16 @@ class BreezyVoiceNode:
                     print("[BreezyVoice] Using mixed precision autocast")
                     with torch.cuda.amp.autocast(enabled=True):
                         output = cosyvoice.inference_zero_shot(tts_text, prompt_text, prompt_speech_16k, False, speed, text_frontend)
+                        # 處理generator返回值
+                        if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                            output = list(output)
                         spk_model = cosyvoice.frontend.frontend_zero_shot(tts_text, prompt_text, prompt_speech_16k, 24000)
                 else:
                     print("[BreezyVoice] Using standard precision")
                     output = cosyvoice.inference_zero_shot(tts_text, prompt_text, prompt_speech_16k, False, speed, text_frontend)
+                    # 處理generator返回值
+                    if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                        output = list(output)
                     spk_model = cosyvoice.frontend.frontend_zero_shot(tts_text, prompt_text, prompt_speech_16k, 24000)
                 
                 # 清理說話人模型
@@ -348,11 +531,136 @@ class BreezyVoiceNode:
                     print("[BreezyVoice] Using mixed precision autocast")
                     with torch.cuda.amp.autocast(enabled=True):
                         output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model, False, speed, text_frontend)
+                        # 處理generator返回值
+                        if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                            output = list(output)
                 else:
                     print("[BreezyVoice] Using standard precision")
                     output = cosyvoice.inference_zero_shot_with_spkmodel(tts_text, speaker_model, False, speed, text_frontend)
+                    # 處理generator返回值
+                    if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                        output = list(output)
                 
                 return return_audio(output, t0, None)
+
+    def generate_chunked(self, tts_text, speed, seed, text_frontend, optimization_mode, enable_cache, max_chars_per_chunk, crossfade_ms, prompt_text=None, prompt_wav=None, speaker_model=None):
+        """
+        分chunk生成長文字語音（重複參考法）
+        """
+        t0 = time.time()
+        
+        # 獲取最佳化設定
+        opt_settings = self.get_optimization_settings(optimization_mode)
+        print(f"[BreezyVoice] Using {optimization_mode} optimization mode for chunked processing")
+        
+        # 分割文字為chunks
+        text_chunks = self.split_text_to_chunks(tts_text, max_chars_per_chunk)
+        print(f"[BreezyVoice] Split text into {len(text_chunks)} chunks: {[len(chunk) for chunk in text_chunks]} chars each")
+        
+        # 獲取模型目錄
+        model_dir = self.download_breezy_voice_hf()
+        
+        # 根據快取設定獲取模型
+        if enable_cache:
+            self.cosyvoice = get_cached_model(model_dir)
+        else:
+            print(f"[BreezyVoice] Loading model without cache: {model_dir}")
+            self.cosyvoice = CosyVoice1(model_dir)
+        
+        # 最佳化推理設定
+        self.cosyvoice, use_mixed_precision = self.optimize_inference_settings(self.cosyvoice, opt_settings["use_fp16"])
+        
+        # 設定隨機種子
+        set_all_random_seed(seed)
+        
+        # 處理音訊和生成chunks
+        if speaker_model is None:
+            # 使用音訊提示進行零樣本複製
+            assert prompt_wav is not None, "當未提供speaker_model時，必須提供prompt_wav！"
+            assert len(prompt_text.strip()) > 0, "prompt文字為空，您是否忘記輸入prompt文字？"
+            
+            # 音訊處理
+            speech = fAudioTool.audio_resample(prompt_wav["waveform"], prompt_wav["sample_rate"])
+            prompt_speech_16k = fAudioTool.postprocess(speech)
+            
+            print('[BreezyVoice] Chunked zero-shot inference with audio prompt')
+            
+            # 使用重複參考法處理所有chunks
+            audio_chunks = self.chunk_inference_with_reference(
+                text_chunks, prompt_text, prompt_speech_16k, 
+                speed, text_frontend, use_mixed_precision
+            )
+            
+            # 為第一個chunk生成speaker model
+            with torch.no_grad():
+                if use_mixed_precision and torch.cuda.is_available():
+                    with torch.cuda.amp.autocast(enabled=True):
+                        spk_model = self.cosyvoice.frontend.frontend_zero_shot(text_chunks[0], prompt_text, prompt_speech_16k, 24000)
+                else:
+                    spk_model = self.cosyvoice.frontend.frontend_zero_shot(text_chunks[0], prompt_text, prompt_speech_16k, 24000)
+                
+                # 清理說話人模型
+                if 'text' in spk_model:
+                    del spk_model['text']
+                if 'text_len' in spk_model:
+                    del spk_model['text_len']
+            
+            speaker_model_output = spk_model
+        else:
+            # 使用已有的說話人模型
+            print('[BreezyVoice] Chunked zero-shot inference with existing speaker model')
+            
+            audio_chunks = []
+            for i, chunk_text in enumerate(text_chunks):
+                print(f"[BreezyVoice] Processing chunk {i+1}/{len(text_chunks)} with speaker model")
+                
+                if use_mixed_precision and torch.cuda.is_available():
+                    with torch.cuda.amp.autocast(enabled=True):
+                        output = self.cosyvoice.inference_zero_shot_with_spkmodel(chunk_text, speaker_model, False, speed, text_frontend)
+                        # 處理generator返回值
+                        if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                            output = list(output)
+                else:
+                    output = self.cosyvoice.inference_zero_shot_with_spkmodel(chunk_text, speaker_model, False, speed, text_frontend)
+                    # 處理generator返回值
+                    if hasattr(output, '__iter__') and not isinstance(output, (torch.Tensor, dict)):
+                        output = list(output)
+                
+                # 提取音訊
+                if isinstance(output, (list, tuple)):
+                    audio_chunks.append(output[0]['tts_speech'])
+                else:
+                    audio_chunks.append(output['tts_speech'])
+                
+                # 清理記憶體
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+            
+            speaker_model_output = None
+        
+        # 合併音訊chunks
+        print(f"[BreezyVoice] Concatenating {len(audio_chunks)} audio chunks with {crossfade_ms}ms crossfade")
+        final_audio = self.concatenate_audio_chunks(audio_chunks, crossfade_ms)
+        
+        # 包裝為返回格式
+        output_list = [final_audio]
+        
+        t1 = time.time()
+        inference_time = t1 - t0
+        print(f"[BreezyVoice] Chunked inference time: {inference_time:.3f}s for {len(text_chunks)} chunks")
+        
+        # 更高效的拼接
+        if len(output_list) > 1:
+            audio_tensor = torch.cat(output_list, dim=1).unsqueeze(0)
+        else:
+            audio_tensor = output_list[0].unsqueeze(0)
+        
+        audio = {"waveform": audio_tensor, "sample_rate": fAudioTool.target_sr}
+        
+        if speaker_model_output is not None:
+            return (audio, speaker_model_output,)
+        else:
+            return (audio,)
 
 class BreezyVoiceCrossLingualNode:
     @classmethod

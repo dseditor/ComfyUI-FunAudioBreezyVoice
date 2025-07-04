@@ -1,15 +1,16 @@
 [project]
-name = "comfyui-funaudiollm"
-description = "Comfyui custom node for [FunAudioLLM](https://funaudiollm.github.io/) include [CosyVoice](https://github.com/FunAudioLLM/CosyVoice) and [SenseVoice](https://github.com/FunAudioLLM/SenseVoice)."
-version = "1.0.0"
+name = "funaudiobreezyvoice"
+description = "FunAudio Fork For BreezyVoice Supporting Chunk And FP16"
+version = "1.0.1"
 license = {file = "LICENSE"}
-dependencies = ["conformer", "deepspeed; sys_platform == 'linux'", "diffusers", "grpcio", "grpcio-tools", "hydra-core", "HyperPyYAML", "inflect", "librosa", "lightning", "matplotlib", "modelscope", "networkx", "omegaconf", "onnxruntime-gpu; sys_platform == 'linux'", "onnxruntime; sys_platform == 'darwin' or sys_platform == 'win32'", "openai-whisper", "protobuf", "pydantic", "rich", "soundfile", "tensorboard", "wget", "gdown", "pyarrow", "jieba", "pypinyin", "pydub", "audiosegment", "srt", "ffmpeg-python", "WeTextProcessing", "aliyun-python-sdk-core", "funasr>=1.1.3", "huggingface", "huggingface_hub"]
+dependencies = ["conformer", "diffusers", "grpcio", "grpcio-tools", "hydra-core", "HyperPyYAML", "inflect", "librosa", "lightning", "matplotlib", "modelscope", "networkx", "omegaconf", "openai-whisper", "protobuf", "pydantic", "rich", "soundfile", "tensorboard", "wget", "gdown", "pyarrow", "jieba", "pypinyin", "pydub", "audiosegment", "srt", "ffmpeg-python", "funasr>=1.1.3", "huggingface", "huggingface_hub", "pyworld", "accelerate", "julius", "importlib_resources"]
 
 [project.urls]
-Repository = "https://github.com/SpenserCai/ComfyUI-FunAudioLLM"
-#  Used by Comfy Registry https://comfyregistry.org
+Repository = "https://github.com/dseditor/ComfyUI-FunAudioBreezyVoice"
+#  Used by Comfy Registry https://registry.comfy.org
 
 [tool.comfy]
-PublisherId = "spensercai"
-DisplayName = "ComfyUI-FunAudioLLM"
+PublisherId = "dseditor"
+DisplayName = "ComfyUI-FunAudioBreezyVoice"
 Icon = ""
+includes = []
