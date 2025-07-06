@@ -133,11 +133,11 @@ class BreezyVoiceNode:
                     "tooltip": "啟用chunk處理以支援長文字（超過100字符自動分割）"
                 }),
                 "max_chars_per_chunk": ("INT", {
-                    "default": 100,
-                    "min": 50,
+                    "default": 80,
+                    "min": 40,
                     "max": 200,
                     "step": 10,
-                    "tooltip": "每個chunk的最大字符數，建議100字符以內"
+                    "tooltip": "每個chunk的最大字符數，建議80字符以內"
                 }),
                 "crossfade_ms": ("INT", {
                     "default": 30,
